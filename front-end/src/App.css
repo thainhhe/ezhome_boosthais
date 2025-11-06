@@ -1,1 +1,14 @@
 /* App styles */
+
+/* Hide default scrollbar for horizontal carousel (uses modern browsers) */
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+.scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* Fallback background placeholder if user doesn't have hero image */
+body, #root, .App { min-height: 100vh; }
+
+/* Small responsive tweaks */
+@media (min-width: 768px) {
+	.App { font-size: 16px; }
+}
+

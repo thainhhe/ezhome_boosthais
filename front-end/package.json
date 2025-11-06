@@ -1,7 +1,7 @@
 {
-  "name": "wooden-toys-frontend",
+  "name": "ezhome-frontend",
   "version": "1.0.0",
-  "description": "Frontend for Wooden Toys Store",
+  "description": "Frontend for EZHome",
   "type": "module",
   "scripts": {
     "dev": "vite",
