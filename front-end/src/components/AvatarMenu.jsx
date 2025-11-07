@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import useAuthStore from "../stores/authStore";
 
-export default function AvatarMenu() {
+export default function AvatarMenu({ onShowDashboard }) {
   const { user, logout } = useAuthStore();
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
@@ -48,7 +48,11 @@ export default function AvatarMenu() {
       {open && (
         <div className="absolute right-0 mt-2 w-40 bg-white rounded-md shadow-lg py-1 text-sm overflow-hidden">
           <button
-            onClick={() => navigate("/dashboard")}
+            onClick={() => {
+              // request parent to show dashboard in-place
+              if (onShowDashboard) onShowDashboard();
+              else navigate("/dashboard");
+            }}
             className="w-full text-left px-3 py-2 hover:bg-slate-100"
           >
             Profile

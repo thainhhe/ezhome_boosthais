@@ -3,9 +3,11 @@ import AuthModal from "./AuthModal";
 import useAuthStore from "../stores/authStore";
 import AvatarMenu from "./AvatarMenu";
 
-export default function Navbar() {
-  // authMode: null | 'login' | 'register'
-  const [authMode, setAuthMode] = useState(null);
+export default function Navbar({ authMode, setAuthMode, onShowDashboard }) {
+  // support both controlled (props passed) and uncontrolled usage
+  const [localAuthMode, setLocalAuthMode] = useState(null);
+  const mode = typeof authMode !== "undefined" ? authMode : localAuthMode;
+  const setMode = setAuthMode || setLocalAuthMode;
   const { isAuthenticated } = useAuthStore();
 
   return (
@@ -28,28 +30,28 @@ export default function Navbar() {
         {!isAuthenticated ? (
           <>
             <button
-              onClick={() => setAuthMode("register")}
+              onClick={() => setMode("register")}
               className="hidden sm:inline-block px-4 py-2 rounded-md border border-white/30 text-white/90 hover:bg-white/10"
             >
               Đăng kí
             </button>
 
             <button
-              onClick={() => setAuthMode("login")}
+              onClick={() => setMode("login")}
               className="px-4 py-2 rounded-md bg-teal-600 text-white hover:bg-teal-500"
             >
               Đăng nhập
             </button>
           </>
         ) : (
-          <AvatarMenu />
+          <AvatarMenu onShowDashboard={onShowDashboard} />
         )}
       </div>
 
       <AuthModal
-        isOpen={!!authMode}
-        initialMode={authMode || "login"}
-        onClose={() => setAuthMode(null)}
+        isOpen={!!mode}
+        initialMode={mode || "login"}
+        onClose={() => setMode(null)}
       />
     </nav>
   );
