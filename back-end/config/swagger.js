@@ -282,6 +282,40 @@ const options = {
             },
           },
         },
+        Booking: {
+          type: "object",
+          properties: {
+            _id: {
+              type: "string",
+              description: "Booking ID",
+            },
+            user: {
+              type: "string",
+              description: "User ID",
+            },
+            room: {
+              type: "string",
+              description: "Room ID",
+            },
+            totalAmount: {
+              type: "number",
+              example: 3000000,
+            },
+            status: {
+              type: "string",
+              enum: ["pending", "completed", "cancelled"],
+              example: "pending",
+            },
+            createdAt: {
+              type: "string",
+              format: "date-time",
+            },
+            updatedAt: {
+              type: "string",
+              format: "date-time",
+            },
+          },
+        },
       },
     },
     tags: [
@@ -300,6 +334,10 @@ const options = {
       {
         name: "Rooms",
         description: "Room management endpoints",
+      },
+      {
+        name: "Bookings",
+        description: "Booking management endpoints",
       },
     ],
   },

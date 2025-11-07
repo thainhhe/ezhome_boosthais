@@ -8,10 +8,11 @@
 4. [API Protected (Protected Endpoints)](#4-api-protected-protected-endpoints)
 5. [API User (User Endpoints)](#5-api-user-user-endpoints)
 6. [API Phòng Trọ (Room Endpoints)](#6-api-phòng-trọ-room-endpoints)
-7. [Mô hình dữ liệu (Data Models)](#7-mô-hình-dữ-liệu-data-models)
-8. [Ví dụ tích hợp (Integration Examples)](#8-ví-dụ-tích-hợp-integration-examples)
-9. [Tóm tắt nhanh (Quick Reference)](#9-tóm-tắt-nhanh-quick-reference)
-10. [Liên hệ & Hỗ trợ](#10-liên-hệ--hỗ-trợ)
+7. [API Đặt Chỗ (Booking Endpoints)](#7-api-đặt-chỗ-booking-endpoints)
+8. [Mô hình dữ liệu (Data Models)](#8-mô-hình-dữ-liệu-data-models)
+9. [Ví dụ tích hợp (Integration Examples)](#9-ví-dụ-tích-hợp-integration-examples)
+10. [Tóm tắt nhanh (Quick Reference)](#10-tóm-tắt-nhanh-quick-reference)
+11. [Liên hệ & Hỗ trợ](#11-liên-hệ--hỗ-trợ)
 
 ---
 
@@ -1151,9 +1152,310 @@ const response = await fetch('http://localhost:5000/api/rooms', {
 
 ---
 
-## 7. Mô hình dữ liệu (Data Models)
+## 7. API Đặt Chỗ (Booking Endpoints)
 
-### 7.1. User Model
+### 7.1. Tạo đặt chỗ (Create Booking)
+
+**Endpoint:** `POST /api/bookings`
+
+**Yêu cầu:**
+- ✅ Xác thực (Access Token)
+- ✅ Quyền User
+
+**Lưu ý:** Endpoint này tạo booking với trạng thái `pending`. Sau khi tạo thành công, frontend sẽ hiển thị QR code để người dùng chuyển khoản. Admin sẽ kiểm tra và cập nhật trạng thái sau.
+
+**Request Body:**
+```json
+{
+  "roomId": "507f1f77bcf86cd799439011"
+}
+```
+
+**Response (201 Created):**
+```json
+{
+  "message": "Booking created successfully",
+  "booking": {
+    "_id": "507f1f77bcf86cd799439012",
+    "user": "507f1f77bcf86cd799439010",
+    "room": {
+      "_id": "507f1f77bcf86cd799439011",
+      "title": "Phòng trọ đẹp tại Cầu Giấy",
+      "rentPrice": 3000000,
+      "area": 25,
+      "address": {
+        "city": "Hà Nội",
+        "district": "Cầu Giấy",
+        "street": "Dương Quảng Hàm"
+      }
+    },
+    "totalAmount": 3000000,
+    "status": "pending",
+    "createdAt": "2024-01-01T00:00:00.000Z",
+    "updatedAt": "2024-01-01T00:00:00.000Z"
+  }
+}
+```
+
+**Lỗi (400 Bad Request):**
+```json
+{
+  "message": "roomId is required"
+}
+```
+
+**Lỗi (401 Unauthorized):**
+```json
+{
+  "message": "Unauthorized"
+}
+```
+
+**Lỗi (403 Forbidden):**
+```json
+{
+  "message": "Forbidden: Access restricted to user"
+}
+```
+
+**Lỗi (404 Not Found):**
+```json
+{
+  "message": "Room not found"
+}
+```
+
+---
+
+### 7.2. Lấy danh sách đặt chỗ của tôi (Get My Bookings)
+
+**Endpoint:** `GET /api/bookings/my-bookings`
+
+**Yêu cầu:**
+- ✅ Xác thực (Access Token)
+- ✅ Quyền User
+
+**Response (200 OK):**
+```json
+[
+  {
+    "_id": "507f1f77bcf86cd799439012",
+    "user": "507f1f77bcf86cd799439010",
+    "room": {
+      "_id": "507f1f77bcf86cd799439011",
+      "title": "Phòng trọ đẹp tại Cầu Giấy",
+      "rentPrice": 3000000,
+      "area": 25,
+      "address": {
+        "city": "Hà Nội",
+        "district": "Cầu Giấy",
+        "street": "Dương Quảng Hàm"
+      }
+    },
+    "totalAmount": 3000000,
+    "status": "pending",
+    "createdAt": "2024-01-01T00:00:00.000Z",
+    "updatedAt": "2024-01-01T00:00:00.000Z"
+  },
+  {
+    "_id": "507f1f77bcf86cd799439013",
+    "user": "507f1f77bcf86cd799439010",
+    "room": {
+      "_id": "507f1f77bcf86cd799439014",
+      "title": "Phòng trọ giá rẻ tại Ba Đình",
+      "rentPrice": 2500000,
+      "area": 20
+    },
+    "totalAmount": 2500000,
+    "status": "completed",
+    "createdAt": "2024-01-02T00:00:00.000Z",
+    "updatedAt": "2024-01-03T00:00:00.000Z"
+  }
+]
+```
+
+**Lỗi (401 Unauthorized):**
+```json
+{
+  "message": "Unauthorized"
+}
+```
+
+**Lỗi (403 Forbidden):**
+```json
+{
+  "message": "Forbidden: Access restricted to user"
+}
+```
+
+---
+
+### 7.3. Lấy tất cả đặt chỗ (Get All Bookings) - Admin Only
+
+**Endpoint:** `GET /api/bookings/all`
+
+**Yêu cầu:**
+- ✅ Xác thực (Access Token)
+- ✅ Quyền Admin
+
+**Lưu ý:** Endpoint này dành cho admin để xem tất cả booking và quản lý trạng thái thanh toán.
+
+**Response (200 OK):**
+```json
+[
+  {
+    "_id": "507f1f77bcf86cd799439012",
+    "user": {
+      "_id": "507f1f77bcf86cd799439010",
+      "name": "Nguyễn Văn A",
+      "email": "user@example.com",
+      "role": "user"
+    },
+    "room": {
+      "_id": "507f1f77bcf86cd799439011",
+      "title": "Phòng trọ đẹp tại Cầu Giấy",
+      "rentPrice": 3000000,
+      "area": 25
+    },
+    "totalAmount": 3000000,
+    "status": "pending",
+    "createdAt": "2024-01-01T00:00:00.000Z",
+    "updatedAt": "2024-01-01T00:00:00.000Z"
+  },
+  {
+    "_id": "507f1f77bcf86cd799439013",
+    "user": {
+      "_id": "507f1f77bcf86cd799439015",
+      "name": "Trần Thị B",
+      "email": "user2@example.com",
+      "role": "user"
+    },
+    "room": {
+      "_id": "507f1f77bcf86cd799439014",
+      "title": "Phòng trọ giá rẻ tại Ba Đình",
+      "rentPrice": 2500000,
+      "area": 20
+    },
+    "totalAmount": 2500000,
+    "status": "completed",
+    "createdAt": "2024-01-02T00:00:00.000Z",
+    "updatedAt": "2024-01-03T00:00:00.000Z"
+  }
+]
+```
+
+**Lỗi (401 Unauthorized):**
+```json
+{
+  "message": "Unauthorized"
+}
+```
+
+**Lỗi (403 Forbidden):**
+```json
+{
+  "message": "Forbidden: Access restricted to admin"
+}
+```
+
+---
+
+### 7.4. Cập nhật trạng thái đặt chỗ (Update Booking Status) - Admin Only
+
+**Endpoint:** `PUT /api/bookings/status/:id`
+
+**Yêu cầu:**
+- ✅ Xác thực (Access Token)
+- ✅ Quyền Admin
+
+**Lưu ý:** Admin sử dụng endpoint này để cập nhật trạng thái booking sau khi kiểm tra thanh toán:
+- `pending` → `completed`: Đã xác nhận thanh toán
+- `pending` → `cancelled`: Hủy đặt chỗ
+
+**Path Parameters:**
+- `id` (string, required): ID của booking
+
+**Request Body:**
+```json
+{
+  "status": "completed"
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "message": "Booking status updated successfully",
+  "booking": {
+    "_id": "507f1f77bcf86cd799439012",
+    "user": {
+      "_id": "507f1f77bcf86cd799439010",
+      "name": "Nguyễn Văn A",
+      "email": "user@example.com",
+      "role": "user"
+    },
+    "room": {
+      "_id": "507f1f77bcf86cd799439011",
+      "title": "Phòng trọ đẹp tại Cầu Giấy",
+      "rentPrice": 3000000,
+      "area": 25
+    },
+    "totalAmount": 3000000,
+    "status": "completed",
+    "createdAt": "2024-01-01T00:00:00.000Z",
+    "updatedAt": "2024-01-03T00:00:00.000Z"
+  }
+}
+```
+
+**Lỗi (400 Bad Request):**
+```json
+{
+  "message": "status is required"
+}
+```
+
+```json
+{
+  "message": "status must be one of: pending, completed, cancelled"
+}
+```
+
+**Lỗi (401 Unauthorized):**
+```json
+{
+  "message": "Unauthorized"
+}
+```
+
+**Lỗi (403 Forbidden):**
+```json
+{
+  "message": "Forbidden: Access restricted to admin"
+}
+```
+
+**Lỗi (404 Not Found):**
+```json
+{
+  "message": "Booking not found"
+}
+```
+
+**Luồng hoạt động:**
+1. User tạo booking → `status: 'pending'`
+2. Frontend hiển thị QR code để user chuyển khoản
+3. Admin đăng nhập, xem danh sách booking `pending` tại `/api/bookings/all`
+4. Admin kiểm tra tài khoản ngân hàng
+5. Admin cập nhật status:
+   - Nếu đã thanh toán: `PUT /api/bookings/status/:id` với `{ "status": "completed" }`
+   - Nếu hủy: `PUT /api/bookings/status/:id` với `{ "status": "cancelled" }`
+
+---
+
+## 8. Mô hình dữ liệu (Data Models)
+
+### 8.1. User Model
 
 ```json
 {
@@ -1176,7 +1478,7 @@ const response = await fetch('http://localhost:5000/api/rooms', {
 
 ---
 
-### 7.2. Room Model
+### 8.2. Room Model
 
 ```json
 {
@@ -1237,9 +1539,36 @@ const response = await fetch('http://localhost:5000/api/rooms', {
 
 ---
 
-## 8. Ví dụ tích hợp (Integration Examples)
+### 8.3. Booking Model
 
-### 8.1. Axios Setup
+```json
+{
+  "_id": "507f1f77bcf86cd799439012",
+  "user": "507f1f77bcf86cd799439010",
+  "room": "507f1f77bcf86cd799439011",
+  "totalAmount": 3000000,
+  "status": "pending",
+  "createdAt": "2024-01-01T00:00:00.000Z",
+  "updatedAt": "2024-01-01T00:00:00.000Z"
+}
+```
+
+**Giải thích các fields:**
+- **`user`** (ObjectId, required): ID của user đặt chỗ (ref: 'User')
+- **`room`** (ObjectId, required): ID của phòng được đặt (ref: 'Room')
+- **`totalAmount`** (number, required): Tổng số tiền tại thời điểm đặt (sao chép từ `room.rentPrice`)
+- **`status`** (string, enum: ['pending', 'completed', 'cancelled'], default: 'pending'): Trạng thái đặt chỗ
+  - `pending`: Đang chờ thanh toán
+  - `completed`: Đã thanh toán thành công
+  - `cancelled`: Đã hủy
+- **`createdAt`** (date-time): Thời gian tạo booking
+- **`updatedAt`** (date-time): Thời gian cập nhật lần cuối
+
+---
+
+## 9. Ví dụ tích hợp (Integration Examples)
+
+### 9.1. Axios Setup
 
 ```javascript
 import axios from 'axios';
@@ -1290,7 +1619,7 @@ api.interceptors.response.use(
 export default api;
 ```
 
-### 8.2. Fetch API Setup
+### 9.2. Fetch API Setup
 
 ```javascript
 const API_BASE_URL = 'http://localhost:5000';
@@ -1343,7 +1672,7 @@ async function apiRequest(endpoint, options = {}) {
 
 ---
 
-## 9. Tóm tắt nhanh (Quick Reference)
+## 10. Tóm tắt nhanh (Quick Reference)
 
 ### Endpoints Public (Không cần xác thực)
 
@@ -1361,6 +1690,11 @@ async function apiRequest(endpoint, options = {}) {
 - `GET /api/dashboard` - Lấy thông tin dashboard
 - `GET /users/:id` - Lấy thông tin user (chỉ xem chính mình hoặc admin)
 
+### Endpoints Yêu cầu Quyền User
+
+- `POST /api/bookings` - Tạo đặt chỗ
+- `GET /api/bookings/my-bookings` - Lấy danh sách đặt chỗ của tôi
+
 ### Endpoints Yêu cầu Quyền Admin
 
 - `GET /users` - Lấy danh sách user
@@ -1370,10 +1704,12 @@ async function apiRequest(endpoint, options = {}) {
 - `POST /api/rooms` - Tạo phòng (multipart/form-data)
 - `PUT /api/rooms/:id` - Cập nhật phòng
 - `DELETE /api/rooms/:id` - Xóa phòng
+- `GET /api/bookings/all` - Lấy tất cả đặt chỗ
+- `PUT /api/bookings/status/:id` - Cập nhật trạng thái đặt chỗ
 
 ---
 
-## 10. Liên hệ & Hỗ trợ
+## 11. Liên hệ & Hỗ trợ
 
 Nếu có thắc mắc hoặc gặp vấn đề khi tích hợp API, vui lòng liên hệ đội Backend.
 

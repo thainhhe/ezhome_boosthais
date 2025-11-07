@@ -10,6 +10,7 @@ const authRoutes = require("./routes/auth.routes");
 const protectedRoutes = require("./routes/protected.routes");
 const testRoutes = require("./routes/test.routes");
 const roomRoutes = require("./routes/room.routes");
+const bookingRoutes = require("./routes/booking.routes");
 const errorHandler = require("./utils/errorHandler");
 
 dotenv.config();
@@ -74,7 +75,7 @@ const corsOptions = {
     } else {
       // Development: chấp nhận localhost hoặc tất cả
       const devOrigins = process.env.FRONTEND_URL_DEV
-        ? [process.env.FRONTEND_URL_DEV, "http://localhost:3000", "http://localhost:5173"]
+        ? [process.env.FRONTEND_URL_DEV, "http://localhost:3000", "http://localhost:5000"]
         : ["http://localhost:3000", "http://localhost:5173"];
 
       if (!origin || devOrigins.includes(origin) || origin.includes("localhost")) {
@@ -100,6 +101,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api", protectedRoutes);
 app.use("/api/test", testRoutes);
 app.use("/api/rooms", roomRoutes);
+app.use("/api/bookings", bookingRoutes);
 
 app.use(errorHandler);
 
