@@ -1,21 +1,33 @@
+const User = require("../models/User");
+
 const userController = {
   getAllUsers: async (req, res) => {
     try {
-      const users = await User.find();
+      const users = await User.find().select("-password");
       res.json(users);
     } catch (error) {
+      console.error("Get all users error:", error);
       res.status(500).json({ message: "Server error" });
     }
   },
 
   getUserById: async (req, res) => {
     try {
-      const user = await User.findById(req.params.id);
+      const user = await User.findById(req.params.id).select("-password");
       if (!user) {
         return res.status(404).json({ message: "User not found" });
       }
+
+      // User chỉ có thể xem chính mình hoặc admin có thể xem tất cả
+      if (req.user.role !== "admin" && req.user._id.toString() !== req.params.id) {
+        return res.status(403).json({
+          message: "Forbidden: You can only view your own profile",
+        });
+      }
+
       res.json(user);
     } catch (error) {
+      console.error("Get user by id error:", error);
       res.status(500).json({ message: "Server error" });
     }
   },
@@ -24,8 +36,11 @@ const userController = {
     try {
       const newUser = new User(req.body);
       await newUser.save();
-      res.status(201).json(newUser);
+      const userResponse = newUser.toObject();
+      delete userResponse.password;
+      res.status(201).json(userResponse);
     } catch (error) {
+      console.error("Create user error:", error);
       res.status(500).json({ message: "Server error" });
     }
   },
@@ -34,12 +49,14 @@ const userController = {
     try {
       const user = await User.findByIdAndUpdate(req.params.id, req.body, {
         new: true,
-      });
+        runValidators: true,
+      }).select("-password");
       if (!user) {
         return res.status(404).json({ message: "User not found" });
       }
       res.json(user);
     } catch (error) {
+      console.error("Update user error:", error);
       res.status(500).json({ message: "Server error" });
     }
   },
@@ -50,8 +67,9 @@ const userController = {
       if (!user) {
         return res.status(404).json({ message: "User not found" });
       }
-      res.json({ message: "User deleted" });
+      res.json({ message: "User deleted successfully" });
     } catch (error) {
+      console.error("Delete user error:", error);
       res.status(500).json({ message: "Server error" });
     }
   },
