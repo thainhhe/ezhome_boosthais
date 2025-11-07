@@ -23,12 +23,13 @@ export default function AuthCallback() {
       // Lưu token
       setToken(token);
       localStorage.setItem("userId", userId);
-      
+
       // Load user profile
       setUser({ id: userId });
-      
+
       toast.success("Đăng nhập thành công!");
-      navigate("/dashboard");
+      // after OAuth login, return to home so navbar shows avatar menu
+      navigate("/");
     } else {
       toast.error("Không nhận được token. Vui lòng thử lại.");
       navigate("/login");
@@ -44,4 +45,3 @@ export default function AuthCallback() {
     </div>
   );
 }
-

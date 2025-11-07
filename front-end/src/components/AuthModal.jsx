@@ -1,46 +1,81 @@
 import React, { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
-import useAuthStore from "../stores/authStore";
 import toast from "react-hot-toast";
+import useAuthStore from "../stores/authStore";
 import { testBackendConnection } from "../utils/testConnection";
 
-export default function Login() {
-  const [isRegister, setIsRegister] = useState(false);
+function ModalShell({ children, isOpen, onClose }) {
+  useEffect(() => {
+    function onKey(e) {
+      if (e.key === "Escape") onClose();
+    }
+    if (isOpen) document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [isOpen, onClose]);
+
+  if (!isOpen) return null;
+
+  return createPortal(
+    <div className="fixed inset-0 z-50 flex items-center justify-center">
+      <div className="absolute inset-0 bg-black/60" onClick={onClose}></div>
+      <div className="relative z-10 w-full max-w-md p-6 bg-white rounded-lg shadow-lg">
+        {children}
+      </div>
+    </div>,
+    document.body
+  );
+}
+
+export default function AuthModal({ isOpen, onClose, initialMode = "login" }) {
+  const [isRegister, setIsRegister] = useState(initialMode === "register");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
-  const { login, register, loading, error, clearError } = useAuthStore();
-  const navigate = useNavigate();
   const [backendConnected, setBackendConnected] = useState(null);
 
-  // Test connection khi component mount
+  const navigate = useNavigate();
+
+  const { login, register, loading, error, clearError } = useAuthStore();
+
   useEffect(() => {
-    const checkConnection = async () => {
-      const connected = await testBackendConnection();
-      setBackendConnected(connected);
-      if (!connected) {
+    if (!isOpen) {
+      setEmail("");
+      setPassword("");
+      setName("");
+      setIsRegister(false);
+      clearError && clearError();
+    } else {
+      // when opening, initialize mode based on prop
+      setIsRegister(initialMode === "register");
+    }
+  }, [isOpen, clearError, initialMode]);
+
+  // Test connection when modal opens
+  useEffect(() => {
+    if (!isOpen) return;
+    const check = async () => {
+      const ok = await testBackendConnection();
+      setBackendConnected(ok);
+      if (!ok) {
         toast.error(
           "Không thể kết nối đến backend. Kiểm tra xem backend có đang chạy không?",
-          {
-            duration: 5000,
-          }
+          { duration: 5000 }
         );
       }
     };
-    checkConnection();
-  }, []);
+    check();
+  }, [isOpen]);
 
   const handleGoogleLogin = () => {
-    // Redirect đến backend Google OAuth endpoint
     const backendUrl = import.meta.env.VITE_API_URL || "http://localhost:5000";
-    // Đảm bảo URL đúng format (loại bỏ dấu / thừa)
-    const cleanUrl = backendUrl.replace(/\/+$/, ""); // Remove trailing slashes
+    const cleanUrl = backendUrl.replace(/\/+$/, "");
     window.location.href = `${cleanUrl}/api/auth/google`;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    clearError();
+    clearError && clearError();
 
     if (isRegister) {
       const result = await register(email, password, name);
@@ -57,7 +92,8 @@ export default function Login() {
       const result = await login(email, password);
       if (result.success) {
         toast.success("Đăng nhập thành công!");
-        // stay on home so navbar updates and shows avatar menu
+        onClose();
+        // after login, go back to home so navbar (which reads auth state) shows avatar menu
         navigate("/");
       } else {
         toast.error(result.error || "Đăng nhập thất bại");
@@ -66,13 +102,13 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-teal-50 to-blue-50 flex items-center justify-center p-4">
-      <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">
+    <ModalShell isOpen={isOpen} onClose={onClose}>
+      <div className="min-w-0">
+        <div className="text-center mb-4">
+          <h3 className="text-2xl font-bold text-gray-800 mb-1">
             {isRegister ? "Đăng ký" : "Đăng nhập"}
-          </h1>
-          <p className="text-gray-600">
+          </h3>
+          <p className="text-sm text-gray-600">
             {isRegister ? "Tạo tài khoản mới" : "Chào mừng trở lại"}
           </p>
           {backendConnected === false && (
@@ -88,7 +124,7 @@ export default function Login() {
         {/* Google Login Button */}
         <button
           onClick={handleGoogleLogin}
-          className="w-full mb-6 flex items-center justify-center gap-3 bg-white border-2 border-gray-300 text-gray-700 rounded-lg py-3 px-4 hover:bg-gray-50 transition-colors font-medium"
+          className="w-full mb-4 flex items-center justify-center gap-3 bg-white border-2 border-gray-300 text-gray-700 rounded-lg py-3 px-4 hover:bg-gray-50 transition-colors font-medium"
         >
           <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
             <path
@@ -111,7 +147,7 @@ export default function Login() {
           Đăng nhập với Google
         </button>
 
-        <div className="relative mb-6">
+        <div className="relative mb-4">
           <div className="absolute inset-0 flex items-center">
             <div className="w-full border-t border-gray-300"></div>
           </div>
@@ -120,7 +156,6 @@ export default function Login() {
           </div>
         </div>
 
-        {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
           {isRegister && (
             <div>
@@ -193,11 +228,11 @@ export default function Login() {
           </button>
         </form>
 
-        <div className="mt-6 text-center">
+        <div className="mt-4 text-center">
           <button
             onClick={() => {
               setIsRegister(!isRegister);
-              clearError();
+              clearError && clearError();
               setEmail("");
               setPassword("");
               setName("");
@@ -210,6 +245,6 @@ export default function Login() {
           </button>
         </div>
       </div>
-    </div>
+    </ModalShell>
   );
 }

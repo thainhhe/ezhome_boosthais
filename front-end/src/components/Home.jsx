@@ -1,9 +1,11 @@
 import React from "react";
 import RoomCard from "./RoomCard";
+import Navbar from "./Navbar";
 
 export default function Home() {
   return (
-    <div className="min-h-screen relative bg-[url('/hero-bg.jpg')] bg-cover bg-center">
+    <div className="min-h-screen relative bg-[url('/banner.webp')] bg-cover bg-center">
+      <Navbar />
       {/* overlay */}
       <div className="absolute inset-0 bg-black/55"></div>
 
@@ -14,16 +16,16 @@ export default function Home() {
             Hệ thống cơ sở
           </div>
           <ul className="mt-4 text-lg">
-            <li>Cơ sở 1: Cầu Giấy</li>
-            <li>Cơ sở 2: Ba Đình</li>
-            <li>Cơ sở 3: Tây Hồ</li>
+            <li>Khu vực: Cầu Giấy</li>
+            <li>Khu vực: Ba Đình</li>
+            <li>Khu vực: Tây Hồ</li>
           </ul>
         </div>
 
         {/* Hero center card */}
         <div className="text-center text-white mb-12">
           <h2 className="text-3xl md:text-4xl font-bold">
-            Cơ sở Dương Quảng Hàm
+            Khu vực Dương Quảng Hàm
           </h2>
           <p className="text-sm text-white/80">[Cầu Giấy]</p>
         </div>
@@ -48,7 +50,7 @@ export default function Home() {
               Book Zalo: 0568.668.558 (0947.336.558)
             </h3>
             <p className="mt-2 text-sm">
-              Lala House - Chuỗi Homestay đa sắc màu dành cho giới trẻ
+              EZ Home - Chuỗi phòng trọ đa sắc màu dành cho giới trẻ
             </p>
 
             <div className="mt-6 space-y-4">
