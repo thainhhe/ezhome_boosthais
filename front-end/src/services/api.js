@@ -8,9 +8,9 @@ const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 const cleanApiUrl = API_URL.replace(/\/+$/, "");
 
 const api = axios.create({
-  // Nếu dùng proxy (development), không cần baseURL
-  // Nếu không dùng proxy (production), dùng baseURL
-  baseURL: isDevelopment ? "" : cleanApiUrl,
+  // Use the backend base URL for all environments so callers can pass full paths
+  // (e.g. '/api/rooms' or '/users'). The frontend will call `${cleanApiUrl}${path}`.
+  baseURL: cleanApiUrl,
   headers: {
     "Content-Type": "application/json",
   },
@@ -97,4 +97,3 @@ api.interceptors.response.use(
 );
 
 export default api;
-

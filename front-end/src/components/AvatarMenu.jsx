@@ -57,12 +57,17 @@ export default function AvatarMenu({ onShowDashboard }) {
           >
             Profile
           </button>
-          <button
-            onClick={() => navigate("/dashboard")}
-            className="w-full text-left px-3 py-2 hover:bg-slate-100"
-          >
-            Dashboard
-          </button>
+          {user?.role === "admin" && (
+            <button
+              onClick={() => {
+                if (onShowDashboard) onShowDashboard();
+                else navigate("/admin");
+              }}
+              className="w-full text-left px-3 py-2 hover:bg-slate-100"
+            >
+              Admin Panel
+            </button>
+          )}
           <button
             onClick={doLogout}
             className="w-full text-left px-3 py-2 hover:bg-slate-100"

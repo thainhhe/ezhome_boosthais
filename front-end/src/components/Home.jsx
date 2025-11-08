@@ -1,13 +1,15 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import RoomCard from "./RoomCard";
 import Navbar from "./Navbar";
 import Dashboard from "../pages/Dashboard";
 import useAuthStore from "../stores/authStore";
+import { useSearchParams } from "react-router-dom";
 
 export default function Home() {
   const [authMode, setAuthMode] = useState(null); // 'login' | 'register' | null
   const [activeView, setActiveView] = useState("home"); // 'home' | 'dashboard'
   const { isAuthenticated } = useAuthStore();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   function handleShowDashboard() {
     if (isAuthenticated) {
@@ -18,15 +20,45 @@ export default function Home() {
     }
   }
 
+  // Open modal based on ?auth=login|register in URL
+  useEffect(() => {
+    const q = searchParams.get("auth");
+    if (q === "login" || q === "register") {
+      setAuthMode(q);
+    }
+    // if param absent, do nothing
+  }, [searchParams]);
+
+  // Keep URL in sync with authMode state
+  useEffect(() => {
+    const q = searchParams.get("auth");
+    if (authMode) {
+      if (q !== authMode) {
+        setSearchParams({ auth: authMode }, { replace: true });
+      }
+    } else {
+      if (q) {
+        // remove auth param
+        const next = new URLSearchParams(searchParams.toString());
+        next.delete("auth");
+        setSearchParams(next, { replace: true });
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authMode]);
+
   return (
-    <div className="min-h-screen relative bg-[url('/banner.webp')] bg-cover bg-center">
+    <div className="min-h-screen relative">
+      {/* fixed background that covers the viewport only and does not scroll with content */}
+      <div className="fixed inset-0 bg-[url('/banner.webp')] bg-cover bg-center bg-fixed"></div>
+      {/* overlay over the background */}
+      <div className="fixed inset-0 bg-black/55 pointer-events-none"></div>
+
       <Navbar
         authMode={authMode}
         setAuthMode={setAuthMode}
         onShowDashboard={handleShowDashboard}
       />
-      {/* overlay */}
-      <div className="absolute inset-0 bg-black/55"></div>
 
       <div className="relative z-10 max-w-6xl mx-auto px-6 py-20">
         {activeView === "home" ? (
@@ -41,6 +73,46 @@ export default function Home() {
                 <li>Khu vực: Ba Đình</li>
                 <li>Khu vực: Tây Hồ</li>
               </ul>
+            </div>
+
+            {/* Hero center card */}
+            <div className="text-center text-white mb-12">
+              <h2 className="text-3xl md:text-4xl font-bold">Khu vực Kim Mã</h2>
+              <p className="text-sm text-white/80">[Ba Đình]</p>
+            </div>
+
+            {/* Rooms carousel */}
+            <div className="mx-auto max-w-5xl">
+              <div className="flex gap-6 overflow-x-auto pb-4 scrollbar-hide">
+                <RoomCard title="Matcha" numbers="301 - 401" />
+                <RoomCard title="Andrea" numbers="201" />
+                <RoomCard title="Coldzy" numbers="402 - 502 - 602" />
+              </div>
+              {/* custom scrollbar indicator */}
+              <div className="mt-4 h-3 bg-white/20 rounded-full w-full relative">
+                <div className="absolute left-0 top-0 h-3 w-1/4 bg-white rounded-full"></div>
+              </div>
+            </div>
+
+            {/* Hero center card */}
+            <div className="text-center text-white mb-12">
+              <h2 className="text-3xl md:text-4xl font-bold">
+                Khu vực Nghi Tàm
+              </h2>
+              <p className="text-sm text-white/80">[Tây Hồ]</p>
+            </div>
+
+            {/* Rooms carousel */}
+            <div className="mx-auto max-w-5xl">
+              <div className="flex gap-6 overflow-x-auto pb-4 scrollbar-hide">
+                <RoomCard title="Matcha" numbers="301 - 401" />
+                <RoomCard title="Andrea" numbers="201" />
+                <RoomCard title="Coldzy" numbers="402 - 502 - 602" />
+              </div>
+              {/* custom scrollbar indicator */}
+              <div className="mt-4 h-3 bg-white/20 rounded-full w-full relative">
+                <div className="absolute left-0 top-0 h-3 w-1/4 bg-white rounded-full"></div>
+              </div>
             </div>
 
             {/* Hero center card */}

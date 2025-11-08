@@ -36,7 +36,8 @@ export default function AuthModal({ isOpen, onClose, initialMode = "login" }) {
 
   const navigate = useNavigate();
 
-  const { login, register, loading, error, clearError } = useAuthStore();
+  const { login, register, loading, error, clearError, loadProfile } =
+    useAuthStore();
 
   useEffect(() => {
     if (!isOpen) {
@@ -93,8 +94,16 @@ export default function AuthModal({ isOpen, onClose, initialMode = "login" }) {
       if (result.success) {
         toast.success("Đăng nhập thành công!");
         onClose();
-        // after login, go back to home so navbar (which reads auth state) shows avatar menu
-        navigate("/");
+        // Ensure we have full profile (role) before redirecting
+        try {
+          const profileRes = await loadProfile();
+          const role = profileRes?.data?.user?.role || profileRes?.user?.role;
+          if (role === "admin") navigate("/admin");
+          else navigate("/");
+        } catch (e) {
+          // fallback to home
+          navigate("/");
+        }
       } else {
         toast.error(result.error || "Đăng nhập thất bại");
       }

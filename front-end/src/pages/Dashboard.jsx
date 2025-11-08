@@ -14,7 +14,8 @@ export default function Dashboard() {
 
   useEffect(() => {
     if (!isAuthenticated) {
-      navigate("/login");
+      // go to home and open login modal
+      navigate("/?auth=login");
       return;
     }
     loadUserData();
@@ -41,7 +42,8 @@ export default function Dashboard() {
   const handleLogout = async () => {
     await logout();
     toast.success("Đã đăng xuất");
-    navigate("/login");
+    // after logout redirect to home and open login modal
+    navigate("/?auth=login");
   };
 
   if (loading) {

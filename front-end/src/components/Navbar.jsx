@@ -8,7 +8,7 @@ export default function Navbar({ authMode, setAuthMode, onShowDashboard }) {
   const [localAuthMode, setLocalAuthMode] = useState(null);
   const mode = typeof authMode !== "undefined" ? authMode : localAuthMode;
   const setMode = setAuthMode || setLocalAuthMode;
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, initialized } = useAuthStore();
 
   return (
     // fixed navbar that sits above the hero background
@@ -43,6 +43,12 @@ export default function Navbar({ authMode, setAuthMode, onShowDashboard }) {
               Đăng nhập
             </button>
           </>
+        ) : !initialized ? (
+          // show a small loading placeholder while we rehydrate the user
+          <div className="flex items-center gap-2 text-white">
+            <div className="w-8 h-8 rounded-full bg-white/20 animate-pulse"></div>
+            <div className="hidden sm:block text-sm">Đang tải...</div>
+          </div>
         ) : (
           <AvatarMenu onShowDashboard={onShowDashboard} />
         )}

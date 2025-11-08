@@ -6,7 +6,7 @@ import toast from "react-hot-toast";
 export default function AuthCallback() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { setToken, setUser } = useAuthStore();
+  const { setToken, setUser, loadProfile } = useAuthStore();
 
   useEffect(() => {
     const token = searchParams.get("token");
@@ -15,7 +15,8 @@ export default function AuthCallback() {
 
     if (error) {
       toast.error("Đăng nhập thất bại. Vui lòng thử lại.");
-      navigate("/login");
+      // redirect to home and open login modal
+      navigate("/?auth=login");
       return;
     }
 
@@ -24,15 +25,25 @@ export default function AuthCallback() {
       setToken(token);
       localStorage.setItem("userId", userId);
 
-      // Load user profile
+      // Load user profile and redirect according to role
       setUser({ id: userId });
-
-      toast.success("Đăng nhập thành công!");
-      // after OAuth login, return to home so navbar shows avatar menu
-      navigate("/");
+      (async () => {
+        try {
+          const profileRes = await loadProfile();
+          const role = profileRes?.data?.user?.role || profileRes?.user?.role;
+          toast.success("Đăng nhập thành công!");
+          if (role === "admin") navigate("/admin");
+          else navigate("/");
+        } catch (e) {
+          // fallback
+          toast.success("Đăng nhập thành công!");
+          navigate("/");
+        }
+      })();
     } else {
       toast.error("Không nhận được token. Vui lòng thử lại.");
-      navigate("/login");
+      // go to home and open login modal
+      navigate("/?auth=login");
     }
   }, [searchParams, navigate, setToken, setUser]);
 

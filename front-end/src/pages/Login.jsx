@@ -9,7 +9,8 @@ export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
-  const { login, register, loading, error, clearError } = useAuthStore();
+  const { login, register, loading, error, clearError, loadProfile } =
+    useAuthStore();
   const navigate = useNavigate();
   const [backendConnected, setBackendConnected] = useState(null);
 
@@ -57,8 +58,14 @@ export default function Login() {
       const result = await login(email, password);
       if (result.success) {
         toast.success("Đăng nhập thành công!");
-        // stay on home so navbar updates and shows avatar menu
-        navigate("/");
+        try {
+          const profileRes = await loadProfile();
+          const role = profileRes?.data?.user?.role || profileRes?.user?.role;
+          if (role === "admin") navigate("/admin");
+          else navigate("/");
+        } catch (e) {
+          navigate("/");
+        }
       } else {
         toast.error(result.error || "Đăng nhập thất bại");
       }
