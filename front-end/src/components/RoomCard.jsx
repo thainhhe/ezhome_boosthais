@@ -17,7 +17,9 @@ export default function RoomCard({ room, title, numbers, className }) {
     room?.images?.[0]?.url ||
     "/placeholder-room.jpg"; // fallback image in public/
 
-  const price = room?.rentPrice ? `${room.rentPrice.toLocaleString()} đ` : null;
+  const price = room?.rentPrice
+    ? `${room.rentPrice.toLocaleString()} vnđ`
+    : null;
 
   const container = (
     <div

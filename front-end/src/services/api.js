@@ -87,7 +87,7 @@ api.interceptors.response.use(
       // Token expired hoặc invalid
       localStorage.removeItem("accessToken");
       localStorage.removeItem("userId");
-      window.location.href = "/login";
+      window.location.href = "/";
     }
 
     // Xử lý network error

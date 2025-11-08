@@ -4,20 +4,33 @@ import toast from "react-hot-toast";
 import locationService from "../../services/locationService";
 
 export default function RoomForm({ initial = {}, onSaved, onCancel }) {
+  // initial may come from a Room document (nested structure)
   const [title, setTitle] = useState(initial.title || "");
   const [rentPrice, setRentPrice] = useState(initial.rentPrice || "");
   const [area, setArea] = useState(initial.area || "");
-  const [street, setStreet] = useState(initial.street || "");
+  const [street, setStreet] = useState(initial.address?.street || "");
   const [description, setDescription] = useState(initial.description || "");
+  const [link360, setLink360] = useState(initial.media?.link360 || "");
   const [images, setImages] = useState([]);
   const [videos, setVideos] = useState([]);
+  const [furnitureDetails, setFurnitureDetails] = useState(
+    initial.furnitureDetails || ""
+  );
+  const [electricityCost, setElectricityCost] = useState(
+    initial.electricityCost || 0
+  );
+  const [waterCost, setWaterCost] = useState(initial.waterCost || 0);
+  const [wifiCost, setWifiCost] = useState(initial.wifiCost || 0);
+  const [parkingCost, setParkingCost] = useState(initial.parkingCost || 0);
   const [submitting, setSubmitting] = useState(false);
 
   // location states
   const [provinces, setProvinces] = useState([]);
   const [districts, setDistricts] = useState([]);
-  const [provinceCode, setProvinceCode] = useState(initial.city || "");
-  const [districtCode, setDistrictCode] = useState(initial.district || "");
+  const [provinceCode, setProvinceCode] = useState(initial.address?.city || "");
+  const [districtCode, setDistrictCode] = useState(
+    initial.address?.district || ""
+  );
   const [loadingProvinces, setLoadingProvinces] = useState(false);
   const [loadingDistricts, setLoadingDistricts] = useState(false);
 
@@ -25,10 +38,17 @@ export default function RoomForm({ initial = {}, onSaved, onCancel }) {
     setTitle(initial.title || "");
     setRentPrice(initial.rentPrice || "");
     setArea(initial.area || "");
-    setStreet(initial.street || "");
+    // nested address in DB
+    setStreet(initial.address?.street || "");
     setDescription(initial.description || "");
-    setProvinceCode(initial.city || "");
-    setDistrictCode(initial.district || "");
+    setProvinceCode(initial.address?.city || "");
+    setDistrictCode(initial.address?.district || "");
+    setLink360(initial.media?.link360 || "");
+    setFurnitureDetails(initial.utilities?.furnitureDetails || "");
+    setElectricityCost(initial.utilities?.electricityCost || 0);
+    setWaterCost(initial.utilities?.waterCost || 0);
+    setWifiCost(initial.utilities?.wifiCost || 0);
+    setParkingCost(initial.utilities?.parkingCost || 0);
   }, [initial]);
 
   // load provinces on mount
@@ -40,11 +60,12 @@ export default function RoomForm({ initial = {}, onSaved, onCancel }) {
         const list = await locationService.getProvinces();
         if (!mounted) return;
         setProvinces(list);
-        if (initial.city) {
+        const initialCity = initial.address?.city || initial.city;
+        if (initialCity) {
           const match = list.find(
             (p) =>
-              String(p.code) === String(initial.city) ||
-              String(p.name) === String(initial.city)
+              String(p.code) === String(initialCity) ||
+              String(p.name) === String(initialCity)
           );
           if (match) {
             setProvinceCode(match.code);
@@ -53,11 +74,13 @@ export default function RoomForm({ initial = {}, onSaved, onCancel }) {
               const ds = await locationService.getDistricts(match.code);
               if (!mounted) return;
               setDistricts(ds);
-              if (initial.district) {
+              const initialDistrict =
+                initial.address?.district || initial.district;
+              if (initialDistrict) {
                 const dmatch = ds.find(
                   (d) =>
-                    String(d.code) === String(initial.district) ||
-                    String(d.name) === String(initial.district)
+                    String(d.code) === String(initialDistrict) ||
+                    String(d.name) === String(initialDistrict)
                 );
                 if (dmatch) setDistrictCode(dmatch.code);
               }
@@ -133,6 +156,12 @@ export default function RoomForm({ initial = {}, onSaved, onCancel }) {
       fd.append("cityCode", provinceCode || "");
       fd.append("districtCode", districtCode || "");
       fd.append("street", street);
+      fd.append("link360", link360 || "");
+      fd.append("furnitureDetails", furnitureDetails || "");
+      fd.append("electricityCost", String(electricityCost || 0));
+      fd.append("waterCost", String(waterCost || 0));
+      fd.append("wifiCost", String(wifiCost || 0));
+      fd.append("parkingCost", String(parkingCost || 0));
       fd.append("description", description);
       for (const f of images) fd.append("images", f);
       for (const v of videos) fd.append("videos", v);
@@ -242,6 +271,67 @@ export default function RoomForm({ initial = {}, onSaved, onCancel }) {
           onChange={(e) => setDescription(e.target.value)}
           className="mt-1 block w-full p-2 border rounded"
         />
+      </div>
+
+      <div className="grid grid-cols-1 gap-3">
+        <div>
+          <label className="block text-sm">360° Link (link360)</label>
+          <input
+            value={link360}
+            onChange={(e) => setLink360(e.target.value)}
+            className="mt-1 block w-full p-2 border rounded"
+            placeholder="https://..."
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm">Furniture details</label>
+          <input
+            value={furnitureDetails}
+            onChange={(e) => setFurnitureDetails(e.target.value)}
+            className="mt-1 block w-full p-2 border rounded"
+            placeholder="e.g. Full furnished with bed, table..."
+          />
+        </div>
+
+        <div className="grid grid-cols-4 gap-2">
+          <div>
+            <label className="block text-sm">Electricity (vnđ)</label>
+            <input
+              type="number"
+              value={electricityCost}
+              onChange={(e) => setElectricityCost(e.target.value)}
+              className="mt-1 block w-full p-2 border rounded"
+            />
+          </div>
+          <div>
+            <label className="block text-sm">Water (vnđ)</label>
+            <input
+              type="number"
+              value={waterCost}
+              onChange={(e) => setWaterCost(e.target.value)}
+              className="mt-1 block w-full p-2 border rounded"
+            />
+          </div>
+          <div>
+            <label className="block text-sm">Wifi (vnđ)</label>
+            <input
+              type="number"
+              value={wifiCost}
+              onChange={(e) => setWifiCost(e.target.value)}
+              className="mt-1 block w-full p-2 border rounded"
+            />
+          </div>
+          <div>
+            <label className="block text-sm">Parking (vnđ)</label>
+            <input
+              type="number"
+              value={parkingCost}
+              onChange={(e) => setParkingCost(e.target.value)}
+              className="mt-1 block w-full p-2 border rounded"
+            />
+          </div>
+        </div>
       </div>
 
       <div>
