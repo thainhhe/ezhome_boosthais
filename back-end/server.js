@@ -96,7 +96,7 @@ swaggerSetup(app);
 
 connectDB();
 
-app.use("/", indexRoutes);
+app.use("/api", indexRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api", protectedRoutes);
 app.use("/api/test", testRoutes);

@@ -3,13 +3,17 @@ import RoomCard from "./RoomCard";
 import Navbar from "./Navbar";
 import Dashboard from "../pages/Dashboard";
 import useAuthStore from "../stores/authStore";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, Link } from "react-router-dom";
+import { adminService } from "../services/adminService";
 
 export default function Home() {
   const [authMode, setAuthMode] = useState(null); // 'login' | 'register' | null
   const [activeView, setActiveView] = useState("home"); // 'home' | 'dashboard'
   const { isAuthenticated } = useAuthStore();
   const [searchParams, setSearchParams] = useSearchParams();
+  const [rooms, setRooms] = useState([]);
+  const [roomsLoading, setRoomsLoading] = useState(false);
+  const [roomsError, setRoomsError] = useState(null);
 
   function handleShowDashboard() {
     if (isAuthenticated) {
@@ -28,6 +32,34 @@ export default function Home() {
     }
     // if param absent, do nothing
   }, [searchParams]);
+
+  // Fetch rooms to show on home
+  useEffect(() => {
+    let mounted = true;
+    const load = async () => {
+      setRoomsLoading(true);
+      setRoomsError(null);
+      try {
+        // call adminService.getRooms which hits /api/rooms
+        const data = await adminService.getRooms({ limit: 12 });
+        // data may be array or { rooms: [...] }
+        const list = Array.isArray(data)
+          ? data
+          : data?.rooms || data?.data || [];
+        if (mounted) setRooms(list);
+      } catch (err) {
+        console.error("Failed to load rooms", err);
+        if (mounted) setRoomsError(err);
+      } finally {
+        if (mounted) setRoomsLoading(false);
+      }
+    };
+
+    load();
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   // Keep URL in sync with authMode state
   useEffect(() => {
@@ -73,6 +105,14 @@ export default function Home() {
                 <li>Khu vực: Ba Đình</li>
                 <li>Khu vực: Tây Hồ</li>
               </ul>
+              <div className="mt-4">
+                <Link
+                  to="/rooms"
+                  className="inline-block px-4 py-2 bg-amber-600 text-white rounded"
+                >
+                  Xem thêm tất cả phòng
+                </Link>
+              </div>
             </div>
 
             {/* Hero center card */}
@@ -81,14 +121,22 @@ export default function Home() {
               <p className="text-sm text-white/80">[Ba Đình]</p>
             </div>
 
-            {/* Rooms carousel */}
+            {/* Rooms carousel (fetched) */}
             <div className="mx-auto max-w-5xl">
-              <div className="flex gap-6 overflow-x-auto pb-4 scrollbar-hide">
-                <RoomCard title="Matcha" numbers="301 - 401" />
-                <RoomCard title="Andrea" numbers="201" />
-                <RoomCard title="Coldzy" numbers="402 - 502 - 602" />
-              </div>
-              {/* custom scrollbar indicator */}
+              {roomsLoading ? (
+                <div className="text-white">Loading rooms...</div>
+              ) : roomsError ? (
+                <div className="text-amber-200">Không thể tải phòng</div>
+              ) : rooms && rooms.length ? (
+                <div className="flex gap-6 overflow-x-auto pb-4 scrollbar-hide">
+                  {rooms.map((r) => (
+                    <RoomCard key={r._id || r.id} room={r} />
+                  ))}
+                </div>
+              ) : (
+                <div className="text-white">No rooms yet</div>
+              )}
+              {/* custom scrollbar indicator (static) */}
               <div className="mt-4 h-3 bg-white/20 rounded-full w-full relative">
                 <div className="absolute left-0 top-0 h-3 w-1/4 bg-white rounded-full"></div>
               </div>

@@ -4,27 +4,28 @@ import api from "./api";
 export const adminService = {
   // Users
   getUsers: async () => {
-    const res = await api.get("/users");
+    // backend mounts user routes under /api (see back-end/server.js)
+    const res = await api.get("/api/users");
     return res.data;
   },
 
   getUserById: async (id) => {
-    const res = await api.get(`/users/${id}`);
+    const res = await api.get(`/api/users/${id}`);
     return res.data;
   },
 
   createUser: async (payload) => {
-    const res = await api.post(`/users`, payload);
+    const res = await api.post(`/api/users`, payload);
     return res.data;
   },
 
   updateUser: async (id, payload) => {
-    const res = await api.put(`/users/${id}`, payload);
+    const res = await api.put(`/api/users/${id}`, payload);
     return res.data;
   },
 
   deleteUser: async (id) => {
-    const res = await api.delete(`/users/${id}`);
+    const res = await api.delete(`/api/users/${id}`);
     return res.data;
   },
 
@@ -67,5 +68,11 @@ export const updateRoom = async (id, formData) => {
 
 export const deleteRoom = async (id) => {
   const res = await api.delete(`/api/rooms/${id}`);
+  return res.data;
+};
+
+// Get single room by id
+export const getRoomById = async (id) => {
+  const res = await api.get(`/api/rooms/${id}`);
   return res.data;
 };

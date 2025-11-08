@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useLocation } from "react-router-dom";
 import AuthModal from "./AuthModal";
 import useAuthStore from "../stores/authStore";
 import AvatarMenu from "./AvatarMenu";
@@ -10,11 +11,18 @@ export default function Navbar({ authMode, setAuthMode, onShowDashboard }) {
   const setMode = setAuthMode || setLocalAuthMode;
   const { isAuthenticated, initialized } = useAuthStore();
 
+  const location = useLocation();
+  const isHome = location.pathname === "/";
+
   return (
     // fixed navbar that sits above the hero background
     <nav className="fixed top-0 left-0 right-0 z-20 px-6 py-4 flex items-center justify-between">
-      {/* translucent background with subtle blur so background remains visible */}
-      <div className="absolute inset-0 pointer-events-none bg-black/20 backdrop-blur-sm"></div>
+      {/* background: translucent on home, dark green on other pages */}
+      <div
+        className={`absolute inset-0 pointer-events-none backdrop-blur-sm ${
+          isHome ? "bg-black/20" : "bg-emerald-800/95"
+        }`}
+      ></div>
 
       <div className="relative z-10 flex items-center gap-3">
         {/* Logo - replace with an <img> if you add a logo file to public */}

@@ -70,7 +70,9 @@ export default function AuthModal({ isOpen, onClose, initialMode = "login" }) {
 
   const handleGoogleLogin = () => {
     const backendUrl = import.meta.env.VITE_API_URL || "http://localhost:5000";
-    const cleanUrl = backendUrl.replace(/\/+$/, "");
+    let cleanUrl = backendUrl.replace(/\/+$/, "");
+    // if user put /api in VITE_API_URL, strip it to avoid double '/api/api'
+    if (cleanUrl.endsWith("/api")) cleanUrl = cleanUrl.replace(/\/api$/, "");
     window.location.href = `${cleanUrl}/api/auth/google`;
   };
 

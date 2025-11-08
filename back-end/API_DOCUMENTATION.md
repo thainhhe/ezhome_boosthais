@@ -453,7 +453,7 @@ if (user.role === 'admin') {
 
 ### 5.1. Lấy danh sách user (Get All Users)
 
-**Endpoint:** `GET /users`
+**Endpoint:** `GET /api/users`
 
 **Yêu cầu:**
 - ✅ Xác thực (Access Token)
@@ -495,7 +495,7 @@ if (user.role === 'admin') {
 
 ### 5.2. Lấy thông tin user theo ID (Get User by ID)
 
-**Endpoint:** `GET /users/:id`
+**Endpoint:** `GET /api/users/:id`
 
 **Yêu cầu:**
 - ✅ Xác thực (Access Token)
@@ -543,7 +543,7 @@ if (user.role === 'admin') {
 
 ### 5.3. Tạo user mới (Create User)
 
-**Endpoint:** `POST /users`
+**Endpoint:** `POST /api/users`
 
 **Yêu cầu:**
 - ✅ Xác thực (Access Token)
@@ -591,7 +591,7 @@ if (user.role === 'admin') {
 
 ### 5.4. Cập nhật user (Update User)
 
-**Endpoint:** `PUT /users/:id`
+**Endpoint:** `PUT /api/users/:id`
 
 **Yêu cầu:**
 - ✅ Xác thực (Access Token)
@@ -648,7 +648,7 @@ if (user.role === 'admin') {
 
 ### 5.5. Xóa user (Delete User)
 
-**Endpoint:** `DELETE /users/:id`
+**Endpoint:** `DELETE /api/users/:id`
 
 **Yêu cầu:**
 - ✅ Xác thực (Access Token)
@@ -1688,7 +1688,7 @@ async function apiRequest(endpoint, options = {}) {
 - `POST /api/auth/logout` - Đăng xuất
 - `GET /api/profile` - Lấy thông tin profile
 - `GET /api/dashboard` - Lấy thông tin dashboard
-- `GET /users/:id` - Lấy thông tin user (chỉ xem chính mình hoặc admin)
+- `GET /api/users/:id` - Lấy thông tin user (chỉ xem chính mình hoặc admin)
 
 ### Endpoints Yêu cầu Quyền User
 
@@ -1697,10 +1697,10 @@ async function apiRequest(endpoint, options = {}) {
 
 ### Endpoints Yêu cầu Quyền Admin
 
-- `GET /users` - Lấy danh sách user
-- `POST /users` - Tạo user mới
-- `PUT /users/:id` - Cập nhật user
-- `DELETE /users/:id` - Xóa user
+- `GET /api/users` - Lấy danh sách user
+- `POST /api/users` - Tạo user mới
+- `PUT /api/users/:id` - Cập nhật user
+- `DELETE /api/users/:id` - Xóa user
 - `POST /api/rooms` - Tạo phòng (multipart/form-data)
 - `PUT /api/rooms/:id` - Cập nhật phòng
 - `DELETE /api/rooms/:id` - Xóa phòng

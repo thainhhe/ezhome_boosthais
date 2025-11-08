@@ -8,7 +8,7 @@ const adminMiddleware = require("../middleware/adminMiddleware");
 
 /**
  * @swagger
- * /users:
+ * /api/users:
  *   get:
  *     summary: Get all users (Admin only)
  *     tags: [Users]
@@ -34,7 +34,7 @@ router.get("/users", authMiddleware, adminMiddleware, userController.getAllUsers
 
 /**
  * @swagger
- * /users/{id}:
+ * /api/users/{id}:
  *   get:
  *     summary: Get user by ID (Auth required)
  *     tags: [Users]
@@ -67,7 +67,7 @@ router.get("/users/:id", authMiddleware, userController.getUserById);
 
 /**
  * @swagger
- * /users:
+ * /api/users:
  *   post:
  *     summary: Create a new user (Admin only)
  *     tags: [Users]
@@ -97,7 +97,7 @@ router.post("/users", authMiddleware, adminMiddleware, userController.createUser
 
 /**
  * @swagger
- * /users/{id}:
+ * /api/users/{id}:
  *   put:
  *     summary: Update user by ID (Admin only)
  *     tags: [Users]
@@ -145,7 +145,7 @@ router.put("/users/:id", authMiddleware, adminMiddleware, userController.updateU
 
 /**
  * @swagger
- * /users/{id}:
+ * /api/users/{id}:
  *   delete:
  *     summary: Delete user by ID (Admin only)
  *     tags: [Users]

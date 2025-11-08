@@ -6,6 +6,8 @@ import { Toaster } from "react-hot-toast";
 import AuthCallback from "./pages/AuthCallback";
 import Dashboard from "./pages/Dashboard";
 import Home from "./components/Home";
+import Rooms from "./pages/Rooms";
+import RoomDetail from "./pages/RoomDetail";
 import useAuthStore from "./stores/authStore";
 import AdminPanel from "./pages/admin/AdminPanel";
 import UsersList from "./pages/admin/UsersList";
@@ -43,6 +45,8 @@ function App() {
         <Navbar />
         <Routes>
           <Route path="/" element={<Home />} />
+          <Route path="/rooms" element={<Rooms />} />
+          <Route path="/rooms/:id" element={<RoomDetail />} />
           {/* <Route path="/login" element={<Login />} /> */}
           <Route path="/auth/callback" element={<AuthCallback />} />
           <Route

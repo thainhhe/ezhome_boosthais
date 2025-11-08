@@ -2,10 +2,17 @@ import axios from "axios";
 
 // Sử dụng proxy trong development, baseURL trong production
 const isDevelopment = import.meta.env.DEV;
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
 // Đảm bảo API_URL không có trailing slash
-const cleanApiUrl = API_URL.replace(/\/+$/, "");
+// Ensure no trailing slash and strip a trailing '/api' if the env accidentally includes it
+let cleanApiUrl = API_URL.replace(/\/+$/, "");
+if (cleanApiUrl.endsWith("/api")) {
+  console.warn(
+    "VITE_API_URL contains '/api' - stripping it to use as backend host only."
+  );
+  cleanApiUrl = cleanApiUrl.replace(/\/api$/, "");
+}
 
 const api = axios.create({
   // Use the backend base URL for all environments so callers can pass full paths
