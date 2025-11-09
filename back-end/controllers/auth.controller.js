@@ -31,7 +31,7 @@ const generateRefreshToken = (user) => {
 const authController = {
   register: async (req, res) => {
     try {
-      const { email, password, name } = req.body;
+      const { email, password, name, phone } = req.body;
 
       if (!email || !password) {
         return res
@@ -48,6 +48,7 @@ const authController = {
         email,
         password,
         name: name || "",
+        phone: phone || "",
       });
 
       await user.save();
@@ -58,6 +59,7 @@ const authController = {
           id: user._id,
           email: user.email,
           name: user.name,
+          phone: user.phone,
         },
       });
     } catch (error) {
@@ -117,6 +119,7 @@ const authController = {
           id: user._id,
           email: user.email,
           name: user.name,
+          phone: user.phone,
         },
       });
     } catch (error) {

@@ -73,6 +73,36 @@ const userController = {
       res.status(500).json({ message: "Server error" });
     }
   },
+
+  updateOwnProfile: async (req, res) => {
+    try {
+      const { name, phone, avatar } = req.body;
+      const userId = req.user._id;
+
+      const updateData = {};
+      if (name !== undefined) updateData.name = name;
+      if (phone !== undefined) updateData.phone = phone;
+      if (avatar !== undefined) updateData.avatar = avatar;
+
+      const user = await User.findByIdAndUpdate(
+        userId,
+        updateData,
+        { new: true, runValidators: true }
+      ).select("-password");
+
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      res.json({
+        message: "Profile updated successfully",
+        user,
+      });
+    } catch (error) {
+      console.error("Update own profile error:", error);
+      res.status(500).json({ message: "Server error" });
+    }
+  },
 };
 
 module.exports = userController;
