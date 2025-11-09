@@ -67,6 +67,41 @@ router.get("/users/:id", authMiddleware, userController.getUserById);
 
 /**
  * @swagger
+ * /api/users/profile/update:
+ *   put:
+ *     summary: Update own profile (Authenticated user)
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *               phone:
+ *                 type: string
+ *               avatar:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Profile updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/User'
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Server error
+ */
+router.put("/users/profile/update", authMiddleware, userController.updateOwnProfile);
+
+/**
+ * @swagger
  * /api/users:
  *   post:
  *     summary: Create a new user (Admin only)

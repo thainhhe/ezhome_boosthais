@@ -48,6 +48,14 @@ const options = {
               type: "string",
               description: "User name",
             },
+            phone: {
+              type: "string",
+              description: "User phone number",
+            },
+            avatar: {
+              type: "string",
+              description: "User avatar URL",
+            },
             role: {
               type: "string",
               enum: ["user", "admin"],
@@ -73,6 +81,10 @@ const options = {
             name: {
               type: "string",
               example: "John Doe",
+            },
+            phone: {
+              type: "string",
+              example: "0987654321",
             },
           },
         },

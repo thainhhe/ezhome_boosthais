@@ -69,9 +69,12 @@ Backend sử dụng **HttpOnly cookies** để lưu trữ Refresh Token. Fronten
 {
   "email": "user@example.com",
   "password": "password123",
-  "name": "Nguyễn Văn A"
+  "name": "Nguyễn Văn A",
+  "phone": "0987654321"
 }
 ```
+
+**Lưu ý:** Trường `phone` là **tùy chọn**.
 
 **Response (201 Created):**
 ```json
@@ -80,7 +83,8 @@ Backend sử dụng **HttpOnly cookies** để lưu trữ Refresh Token. Fronten
   "user": {
     "id": "507f1f77bcf86cd799439011",
     "email": "user@example.com",
-    "name": "Nguyễn Văn A"
+    "name": "Nguyễn Văn A",
+    "phone": "0987654321"
   }
 }
 ```
@@ -122,7 +126,8 @@ Backend sử dụng **HttpOnly cookies** để lưu trữ Refresh Token. Fronten
   "user": {
     "id": "507f1f77bcf86cd799439011",
     "email": "user@example.com",
-    "name": "Nguyễn Văn A"
+    "name": "Nguyễn Văn A",
+    "phone": "0987654321"
   }
 }
 ```
@@ -400,10 +405,11 @@ if (user.role === 'admin') {
 ```json
 {
   "message": "This is a protected route",
-  "user": {
+    "user": {
     "_id": "507f1f77bcf86cd799439011",
     "name": "Nguyễn Văn A",
     "email": "user@example.com",
+    "phone": "0987654321",
     "googleId": null,
     "avatar": "https://example.com/avatar.jpg",
     "role": "user",
@@ -466,6 +472,7 @@ if (user.role === 'admin') {
     "_id": "507f1f77bcf86cd799439011",
     "name": "Nguyễn Văn A",
     "email": "user@example.com",
+    "phone": "0987654321",
     "googleId": null,
     "avatar": "https://example.com/avatar.jpg",
     "role": "user",
@@ -510,6 +517,7 @@ if (user.role === 'admin') {
   "_id": "507f1f77bcf86cd799439011",
   "name": "Nguyễn Văn A",
   "email": "user@example.com",
+  "phone": "0987654321",
   "googleId": null,
   "avatar": "https://example.com/avatar.jpg",
   "role": "user",
@@ -557,6 +565,7 @@ if (user.role === 'admin') {
   "email": "user@example.com",
   "password": "password123",
   "name": "Nguyễn Văn A",
+  "phone": "0987654321",
   "role": "user"
 }
 ```
@@ -567,6 +576,7 @@ if (user.role === 'admin') {
   "_id": "507f1f77bcf86cd799439011",
   "name": "Nguyễn Văn A",
   "email": "user@example.com",
+  "phone": "0987654321",
   "role": "user",
   "createdAt": "2024-01-01T00:00:00.000Z",
   "updatedAt": "2024-01-01T00:00:00.000Z"
@@ -589,7 +599,58 @@ if (user.role === 'admin') {
 
 ---
 
-### 5.4. Cập nhật user (Update User)
+### 5.4. Cập nhật profile của chính mình (Update Own Profile)
+
+**Endpoint:** `PUT /api/users/profile/update`
+
+**Yêu cầu:**
+- ✅ Xác thực (Access Token)
+
+**Request Body:**
+```json
+{
+  "name": "Nguyễn Văn B",
+  "phone": "0912345678",
+  "avatar": "https://example.com/new-avatar.jpg"
+}
+```
+
+**Lưu ý:** Tất cả các fields đều **tùy chọn**. Chỉ gửi các fields muốn cập nhật. User chỉ có thể cập nhật `name`, `phone`, và `avatar` của chính mình.
+
+**Response (200 OK):**
+```json
+{
+  "message": "Profile updated successfully",
+  "user": {
+    "_id": "507f1f77bcf86cd799439011",
+    "name": "Nguyễn Văn B",
+    "email": "user@example.com",
+    "phone": "0912345678",
+    "avatar": "https://example.com/new-avatar.jpg",
+    "role": "user",
+    "createdAt": "2024-01-01T00:00:00.000Z",
+    "updatedAt": "2024-01-02T00:00:00.000Z"
+  }
+}
+```
+
+**Lỗi (401 Unauthorized):**
+```json
+{
+  "message": "Unauthorized"
+}
+```
+
+**Lỗi (404 Not Found):**
+```json
+{
+  "message": "User not found"
+}
+```
+
+---
+
+### 5.5. Cập nhật user (Update User) - Admin Only
 
 **Endpoint:** `PUT /api/users/:id`
 
@@ -605,6 +666,7 @@ if (user.role === 'admin') {
 {
   "name": "Nguyễn Văn B",
   "email": "newemail@example.com",
+  "phone": "0912345678",
   "role": "admin"
 }
 ```
@@ -617,6 +679,7 @@ if (user.role === 'admin') {
   "_id": "507f1f77bcf86cd799439011",
   "name": "Nguyễn Văn B",
   "email": "newemail@example.com",
+  "phone": "0912345678",
   "role": "admin",
   "createdAt": "2024-01-01T00:00:00.000Z",
   "updatedAt": "2024-01-02T00:00:00.000Z"
@@ -646,7 +709,7 @@ if (user.role === 'admin') {
 
 ---
 
-### 5.5. Xóa user (Delete User)
+### 5.6. Xóa user (Delete User)
 
 **Endpoint:** `DELETE /api/users/:id`
 
@@ -1462,6 +1525,7 @@ const response = await fetch('http://localhost:5000/api/rooms', {
   "_id": "507f1f77bcf86cd799439011",
   "name": "Nguyễn Văn A",
   "email": "user@example.com",
+  "phone": "0987654321", // null nếu không có
   "password": "hashed_password", // Không bao giờ trả về trong API
   "googleId": "102167505131672003202", // null nếu không login bằng Google
   "avatar": "https://example.com/avatar.jpg", // null nếu không có
@@ -1473,6 +1537,7 @@ const response = await fetch('http://localhost:5000/api/rooms', {
 
 **Lưu ý:**
 - `password` không bao giờ được trả về trong API response
+- `phone` là trường tùy chọn, có thể null nếu user không cung cấp
 - `googleId` chỉ có giá trị nếu user đăng nhập bằng Google
 - `role` mặc định là `"user"` khi đăng ký mới
 
@@ -1689,6 +1754,7 @@ async function apiRequest(endpoint, options = {}) {
 - `GET /api/profile` - Lấy thông tin profile
 - `GET /api/dashboard` - Lấy thông tin dashboard
 - `GET /api/users/:id` - Lấy thông tin user (chỉ xem chính mình hoặc admin)
+- `PUT /api/users/profile/update` - Cập nhật profile của chính mình
 
 ### Endpoints Yêu cầu Quyền User
 
