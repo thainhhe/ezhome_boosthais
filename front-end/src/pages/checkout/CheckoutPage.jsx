@@ -146,7 +146,7 @@ const CheckoutPage = () => {
   };
 
   const generateQRCodeUrl = (amount, message) => {
-    return `https://img.vietqr.io/image/ICB-105883688517-compact2.png?amount=${amount}&addInfo=${message}`;
+    return `https://img.vietqr.io/image/TCB-19037650527013-compact2.png?amount=${amount}&addInfo=${message}`;
   };
 
   const readNumber = (number) => {

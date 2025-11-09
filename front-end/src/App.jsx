@@ -8,6 +8,7 @@ import Dashboard from "./pages/Dashboard";
 import Home from "./components/Home";
 import Rooms from "./pages/Rooms";
 import RoomDetail from "./pages/RoomDetail";
+import Bookings from "./pages/Bookings";
 import useAuthStore from "./stores/authStore";
 import AdminPanel from "./pages/admin/AdminPanel";
 import UsersList from "./pages/admin/UsersList";
@@ -54,6 +55,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <Dashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/bookings"
+            element={
+              <ProtectedRoute>
+                <Bookings />
               </ProtectedRoute>
             }
           />

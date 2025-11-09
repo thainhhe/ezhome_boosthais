@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, Link } from "react-router-dom";
 import AuthModal from "./AuthModal";
 import useAuthStore from "../stores/authStore";
 import AvatarMenu from "./AvatarMenu";
@@ -35,6 +35,15 @@ export default function Navbar({ authMode, setAuthMode, onShowDashboard }) {
       </div>
 
       <div className="relative z-10 flex items-center gap-3">
+        {isAuthenticated && initialized && (
+          <Link
+            to="/bookings"
+            className="hidden sm:inline-block px-4 py-2 rounded-md border border-white/30 text-white/90 hover:bg-white/10"
+          >
+            Đặt chỗ của tôi
+          </Link>
+        )}
+
         {!isAuthenticated ? (
           <>
             <button
