@@ -1,6 +1,7 @@
 // Simple location service that tries open.oapi.vn first and falls back to a known public API
 // Exports: getProvinces(), getDistricts(provinceCode)
 const BASE = "https://open.oapi.vn";
+const LOCAL_PROXY = "/api/locations"; // server-side proxy to avoid CORS
 const FALLBACK = "https://provinces.open-api.vn/api";
 
 let provincesCache = null; // array of { code, name, districts?: [{code,name}] }
@@ -80,6 +81,22 @@ export async function getProvinces() {
   if (provincesCache) return provincesCache;
 
   // Prefer the public fallback which is known to be reliable, then try the open.oapi.vn host
+  // Try local server-side proxy first (avoids CORS)
+  const proxyUrl = `${LOCAL_PROXY}/provinces`;
+  try {
+    const data = await fetchJsonWithTimeout(proxyUrl);
+    const list = normalizeProvinces(data);
+    if (Array.isArray(list) && list.length > 0) {
+      provincesCache = list;
+      for (const p of list)
+        if (p.districts && p.districts.length)
+          districtsCache[p.code] = p.districts;
+      return provincesCache;
+    }
+  } catch (err) {
+    // fall through to public endpoints
+  }
+
   const tries = [
     `${FALLBACK}/?depth=2`,
     `${FALLBACK}/`,
@@ -103,9 +120,7 @@ export async function getProvinces() {
         return provincesCache;
       }
     } catch (err) {
-      // try next - if the failure came from open.oapi.vn, note it for debugging
       if (url.startsWith(BASE)) {
-        // non-fatal: open.oapi.vn might not expose the expected endpoints
         console.debug(
           "locationService: open.oapi.vn endpoint failed:",
           url,
@@ -139,6 +154,8 @@ export async function getDistricts(provinceCode) {
 
   // try fetching by province id from likely endpoints
   const tries = [
+    // try local proxy first
+    `${LOCAL_PROXY}/districts/${encodeURIComponent(provinceCode)}`,
     `${BASE}/api/p/${provinceCode}?depth=2`,
     `${BASE}/api/districts?province=${provinceCode}`,
     `${BASE}/districts?province=${provinceCode}`,

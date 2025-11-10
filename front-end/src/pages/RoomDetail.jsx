@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { getRoomById } from "../services/adminService";
+import useAuthStore from "../stores/authStore";
 
 export default function RoomDetail() {
   const { id } = useParams();
@@ -147,6 +148,18 @@ export default function RoomDetail() {
             <p className="text-amber-600 font-medium mt-4">
               {room.rentPrice?.toLocaleString()} vnđ
             </p>
+
+            {/* Booking actions */}
+            <div className="mt-4 flex items-center gap-3">
+              <BookButton
+                roomId={room._id || room.id}
+                rentPrice={room.rentPrice}
+                roomTitle={room.title}
+              />
+              <Link to="/rooms" className="px-3 py-2 bg-gray-200 rounded">
+                Back to list
+              </Link>
+            </div>
             <p className="mt-4 text-sm text-gray-700">{room.description}</p>
 
             {/* Utilities */}
@@ -195,14 +208,38 @@ export default function RoomDetail() {
               </div>
             )} */}
 
-            <div className="mt-6">
-              <Link to="/rooms" className="px-3 py-2 bg-gray-200 rounded">
-                Back to list
-              </Link>
-            </div>
+            {/* removed duplicate Back link above */}
           </div>
         </div>
       </div>
     </div>
+  );
+}
+
+function BookButton({ roomId, rentPrice, roomTitle }) {
+  const navigate = useNavigate();
+  const { isAuthenticated } = useAuthStore();
+  const [loading, setLoading] = useState(false);
+  const handleBook = () => {
+    if (!isAuthenticated) {
+      navigate("/?auth=login");
+      return;
+    }
+    // navigate to checkout with state and query param (query param helps survive redirects/refresh)
+    navigate(`/checkout?roomId=${roomId}`, {
+      state: { roomId: roomId, roomTitle: roomTitle, roomPrice: rentPrice },
+    });
+  };
+
+  return (
+    <button
+      onClick={handleBook}
+      disabled={loading}
+      className="px-4 py-2 rounded-md bg-amber-500 text-white hover:bg-amber-600 disabled:opacity-60"
+    >
+      {loading
+        ? "Đang xử lý..."
+        : `Đặt phòng • ${rentPrice?.toLocaleString() || "0"} vnđ`}
+    </button>
   );
 }
