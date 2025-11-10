@@ -12,6 +12,7 @@ if (!process.env.GOOGLE_CLIENT_ID) {
 
 const passport = require("../config/passport");
 const authController = require("../controllers/auth.controller");
+const { registerRules } = require("../middleware/validators");
 
 // Kiểm tra xem Google OAuth có được cấu hình không
 const isGoogleOAuthConfigured = () => {
@@ -50,7 +51,7 @@ const isGoogleOAuthConfigured = () => {
  *       500:
  *         description: Server error
  */
-router.post("/register", authController.register);
+router.post("/register", registerRules, authController.register);
 
 /**
  * @swagger

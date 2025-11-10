@@ -2,6 +2,7 @@ const User = require("../models/User");
 const Token = require("../models/token.model");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const { validationResult } = require("express-validator");
 
 const generateAccessToken = (user) => {
   if (!process.env.JWT_ACCESS_SECRET) {
@@ -31,18 +32,12 @@ const generateRefreshToken = (user) => {
 const authController = {
   register: async (req, res) => {
     try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+      }
+
       const { email, password, name, phone } = req.body;
-
-      if (!email || !password) {
-        return res
-          .status(400)
-          .json({ message: "Email and password are required" });
-      }
-
-      const existingUser = await User.findOne({ email });
-      if (existingUser) {
-        return res.status(400).json({ message: "User already exists" });
-      }
 
       const user = new User({
         email,
