@@ -9,6 +9,7 @@ import Home from "./components/Home";
 import Rooms from "./pages/Rooms";
 import RoomDetail from "./pages/RoomDetail";
 import Bookings from "./pages/Bookings";
+import CheckoutPage from "./pages/checkout/CheckoutPage";
 import useAuthStore from "./stores/authStore";
 import AdminPanel from "./pages/admin/AdminPanel";
 import UsersList from "./pages/admin/UsersList";
@@ -48,6 +49,7 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/rooms" element={<Rooms />} />
           <Route path="/rooms/:id" element={<RoomDetail />} />
+          <Route path="/checkout" element={<CheckoutPage />} />
           {/* <Route path="/login" element={<Login />} /> */}
           <Route path="/auth/callback" element={<AuthCallback />} />
           <Route

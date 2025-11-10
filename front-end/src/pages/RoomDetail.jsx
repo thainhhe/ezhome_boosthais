@@ -1,9 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { getRoomById } from "../services/adminService";
-import bookingService from "../services/bookingService";
 import useAuthStore from "../stores/authStore";
-import { toast } from "react-hot-toast";
 
 export default function RoomDetail() {
   const { id } = useParams();
@@ -156,6 +154,7 @@ export default function RoomDetail() {
               <BookButton
                 roomId={room._id || room.id}
                 rentPrice={room.rentPrice}
+                roomTitle={room.title}
               />
               <Link to="/rooms" className="px-3 py-2 bg-gray-200 rounded">
                 Back to list
@@ -217,32 +216,19 @@ export default function RoomDetail() {
   );
 }
 
-function BookButton({ roomId, rentPrice }) {
+function BookButton({ roomId, rentPrice, roomTitle }) {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuthStore();
   const [loading, setLoading] = useState(false);
-
-  const handleBook = async () => {
+  const handleBook = () => {
     if (!isAuthenticated) {
-      // open auth modal on home
       navigate("/?auth=login");
       return;
     }
-    setLoading(true);
-    try {
-      const res = await bookingService.createBooking(roomId);
-      toast.success("Đặt phòng thành công!");
-      // navigate to my bookings so user sees it
-      navigate("/bookings");
-      return res;
-    } catch (err) {
-      console.error("Booking failed", err);
-      const msg =
-        err?.response?.data?.message || err?.message || "Đặt phòng thất bại";
-      toast.error(msg);
-    } finally {
-      setLoading(false);
-    }
+    // navigate to checkout with state and query param (query param helps survive redirects/refresh)
+    navigate(`/checkout?roomId=${roomId}`, {
+      state: { roomId: roomId, roomTitle: roomTitle, roomPrice: rentPrice },
+    });
   };
 
   return (

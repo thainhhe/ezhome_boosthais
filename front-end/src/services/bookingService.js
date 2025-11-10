@@ -1,9 +1,14 @@
 import api from "./api";
 
 const bookingService = {
-  // create a booking for a room. backend currently expects { roomId }
-  createBooking: async (roomId) => {
-    const res = await api.post(`/api/bookings`, { roomId });
+  // create a booking for a room. backend accepts roomId plus contact/payment data
+  createBooking: async ({ roomId, name, phone, paymentMethod, notes }) => {
+    const payload = { roomId };
+    if (name !== undefined) payload.name = name;
+    if (phone !== undefined) payload.phone = phone;
+    if (paymentMethod !== undefined) payload.paymentMethod = paymentMethod;
+    if (notes !== undefined) payload.notes = notes;
+    const res = await api.post(`/api/bookings`, payload);
     return res.data;
   },
 
