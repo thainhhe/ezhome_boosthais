@@ -11,6 +11,7 @@ const protectedRoutes = require("./routes/protected.routes");
 const testRoutes = require("./routes/test.routes");
 const roomRoutes = require("./routes/room.routes");
 const bookingRoutes = require("./routes/booking.routes");
+const homeRoutes = require("./routes/home.routes");
 const errorHandler = require("./utils/errorHandler");
 
 dotenv.config();
@@ -102,6 +103,7 @@ app.use("/api", protectedRoutes);
 app.use("/api/test", testRoutes);
 app.use("/api/rooms", roomRoutes);
 app.use("/api/bookings", bookingRoutes);
+app.use("/api/home", homeRoutes);
 
 app.use(errorHandler);
 

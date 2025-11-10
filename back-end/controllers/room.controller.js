@@ -37,6 +37,13 @@ const roomController = {
 
   getRoomById: async (req, res) => {
     try {
+      const mongoose = require("mongoose");
+      
+      // Validate ObjectId format
+      if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+        return res.status(400).json({ message: "Invalid room ID format" });
+      }
+
       const room = await Room.findById(req.params.id);
       if (!room) {
         return res.status(404).json({ message: "Room not found" });
