@@ -17,10 +17,10 @@ export default function Navbar({ authMode, setAuthMode, onShowDashboard }) {
   return (
     // fixed navbar that sits above the hero background
     <nav className="fixed top-0 left-0 right-0 z-20 px-6 py-4 flex items-center justify-between">
-      {/* background: translucent on home, dark green on other pages */}
+      {/* background: translucent on home, dark cyan on other pages */}
       <div
         className={`absolute inset-0 pointer-events-none backdrop-blur-sm ${
-          isHome ? "bg-black/20" : "bg-green-700/95"
+          isHome ? "bg-black/20" : "bg-cyan-700/95"
         }`}
       ></div>
 
@@ -57,7 +57,7 @@ export default function Navbar({ authMode, setAuthMode, onShowDashboard }) {
 
             <button
               onClick={() => setMode("login")}
-              className="px-4 py-2 rounded-md bg-green-600 text-white hover:bg-green-500"
+              className="px-4 py-2 rounded-md bg-cyan-600 text-white hover:bg-cyan-500"
             >
               Đăng nhập
             </button>

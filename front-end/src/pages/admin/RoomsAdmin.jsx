@@ -60,56 +60,58 @@ export default function RoomsAdmin() {
   return (
     <div className="min-h-screen pt-24 px-4 bg-gray-50">
       <div className="max-w-6xl mx-auto">
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h2 className="text-2xl font-semibold mb-2">Rooms Management</h2>
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-600">Lọc:</span>
+        <div className="bg-gradient-to-r from-cyan-500 to-cyan-600 rounded-lg shadow-lg p-6 mb-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-2xl font-semibold text-white mb-2">Rooms Management</h2>
+              <div className="flex items-center gap-2 mt-1">
+                <span className="text-sm text-cyan-50">Lọc:</span>
+                <button
+                  onClick={() => setStatusFilter("all")}
+                  className={`px-3 py-1 rounded text-sm transition-colors ${
+                    statusFilter === "all"
+                      ? "bg-white text-cyan-600 font-medium"
+                      : "bg-cyan-400 text-white hover:bg-cyan-300"
+                  }`}
+                >
+                  Tất cả ({rooms.length})
+                </button>
+                <button
+                  onClick={() => setStatusFilter("inactive")}
+                  className={`px-3 py-1 rounded text-sm transition-colors ${
+                    statusFilter === "inactive"
+                      ? "bg-white text-cyan-600 font-medium"
+                      : "bg-cyan-400 text-white hover:bg-cyan-300"
+                  }`}
+                >
+                  Còn trống ({rooms.filter(r => r.status === "inactive").length})
+                </button>
+                <button
+                  onClick={() => setStatusFilter("active")}
+                  className={`px-3 py-1 rounded text-sm transition-colors ${
+                    statusFilter === "active"
+                      ? "bg-white text-cyan-600 font-medium"
+                      : "bg-cyan-400 text-white hover:bg-cyan-300"
+                  }`}
+                >
+                  Đã thuê ({rooms.filter(r => r.status === "active").length})
+                </button>
+              </div>
+            </div>
+            <div className="flex gap-2">
               <button
-                onClick={() => setStatusFilter("all")}
-                className={`px-3 py-1 rounded text-sm ${
-                  statusFilter === "all"
-                    ? "bg-indigo-600 text-white"
-                    : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                }`}
+                onClick={() => navigate("/admin")}
+                className="px-4 py-2 bg-white text-cyan-600 rounded-lg hover:bg-cyan-50 transition-colors font-medium"
               >
-                Tất cả ({rooms.length})
+                Back
               </button>
               <button
-                onClick={() => setStatusFilter("inactive")}
-                className={`px-3 py-1 rounded text-sm ${
-                  statusFilter === "inactive"
-                    ? "bg-green-600 text-white"
-                    : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                }`}
+                onClick={onCreate}
+                className="px-4 py-2 bg-white text-cyan-600 rounded-lg hover:bg-cyan-50 transition-colors font-medium"
               >
-                Còn trống ({rooms.filter(r => r.status === "inactive").length})
-              </button>
-              <button
-                onClick={() => setStatusFilter("active")}
-                className={`px-3 py-1 rounded text-sm ${
-                  statusFilter === "active"
-                    ? "bg-red-600 text-white"
-                    : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                }`}
-              >
-                Đã thuê ({rooms.filter(r => r.status === "active").length})
+                Create Room
               </button>
             </div>
-          </div>
-          <div>
-            <button
-              onClick={() => navigate("/admin")}
-              className="px-3 py-1 bg-gray-200 rounded mr-2 hover:bg-gray-300 transition-colors"
-            >
-              Back
-            </button>
-            <button
-              onClick={onCreate}
-              className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 transition-colors"
-            >
-              Create Room
-            </button>
           </div>
         </div>
 

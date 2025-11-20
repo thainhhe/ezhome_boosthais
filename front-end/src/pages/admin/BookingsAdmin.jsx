@@ -50,21 +50,26 @@ export default function BookingsAdmin() {
   return (
     <div className="min-h-screen pt-24 px-4 bg-gray-50">
       <div className="max-w-6xl mx-auto">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-2xl font-semibold">Bookings (All)</h2>
-          <div>
-            <button
-              onClick={() => (window.location.href = "/admin")}
-              className="px-3 py-1 bg-gray-200 rounded mr-2"
-            >
-              Back
-            </button>
-            <Link
-              to="/admin/rooms"
-              className="px-3 py-1 bg-orange-600 text-white rounded"
-            >
-              Rooms
-            </Link>
+        <div className="bg-gradient-to-r from-cyan-500 to-cyan-600 rounded-lg shadow-lg p-6 mb-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-2xl font-semibold text-white">Bookings Management</h2>
+              <p className="text-cyan-50 mt-1 text-sm">Quản lý đặt phòng</p>
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => (window.location.href = "/admin")}
+                className="px-4 py-2 bg-white text-cyan-600 rounded-lg hover:bg-cyan-50 transition-colors font-medium"
+              >
+                Back
+              </button>
+              <Link
+                to="/admin/rooms"
+                className="px-4 py-2 bg-white text-cyan-600 rounded-lg hover:bg-cyan-50 transition-colors font-medium"
+              >
+                Rooms
+              </Link>
+            </div>
           </div>
         </div>
         {/* Top filter (moved here as requested) */}

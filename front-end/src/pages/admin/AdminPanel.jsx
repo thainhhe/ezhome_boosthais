@@ -5,9 +5,12 @@ export default function AdminPanel() {
   return (
     <div className="min-h-screen pt-24 px-4 bg-gray-50">
       <div className="max-w-5xl mx-auto">
-        <h1 className="text-3xl font-bold mb-4">Admin Panel</h1>
+        <div className="bg-gradient-to-r from-cyan-500 to-cyan-600 rounded-lg shadow-lg p-6 mb-6">
+          <h1 className="text-3xl font-bold text-white">Admin Panel</h1>
+          <p className="text-cyan-50 mt-2">Quản lý hệ thống</p>
+        </div>
 
-        <div className="space-x-3 mb-6">
+        <div className="flex gap-3 mb-6">
           <Link
             to="/admin/users"
             className="inline-block px-4 py-2 bg-indigo-600 text-white rounded"
