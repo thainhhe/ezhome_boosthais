@@ -183,7 +183,14 @@ router.post(
  *       500:
  *         description: Server error
  */
-router.put("/:id", authMiddleware, adminMiddleware, roomController.updateRoom);
+router.put(
+  "/:id",
+  authMiddleware,
+  adminMiddleware,
+  uploadRoomMedia,
+  uploadToCloudinary,
+  roomController.updateRoom
+);
 
 /**
  * @swagger
@@ -208,7 +215,11 @@ router.put("/:id", authMiddleware, adminMiddleware, roomController.updateRoom);
  *       500:
  *         description: Server error
  */
-router.delete("/:id", authMiddleware, adminMiddleware, roomController.deleteRoom);
+router.delete(
+  "/:id",
+  authMiddleware,
+  adminMiddleware,
+  roomController.deleteRoom
+);
 
 module.exports = router;
-
