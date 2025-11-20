@@ -73,12 +73,15 @@ const corsOptions = {
     }
     
     // Production: chỉ cho phép domains cụ thể
-    const allowedOrigins = process.env.FRONTEND_URL
-      ? process.env.FRONTEND_URl.split(",").map((url) => url.trim())
-      : [
-          "https://ezhome.website",
-          "https://www.ezhome.website",
-        ];
+    let allowedOrigins = [
+      "https://ezhome.website",
+      "https://www.ezhome.website",
+    ];
+    
+    // Nếu có FRONTEND_URL trong env, override
+    if (process.env.FRONTEND_URL && typeof process.env.FRONTEND_URL === 'string') {
+      allowedOrigins = process.env.FRONTEND_URL.split(",").map((url) => url.trim());
+    }
 
     if (!origin) {
       // Same-origin request (không có origin header)

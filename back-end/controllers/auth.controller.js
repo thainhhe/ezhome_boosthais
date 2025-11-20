@@ -4,32 +4,41 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { validationResult } = require("express-validator");
 
-// Helper function to get frontend URL based on environment
+// Helper function to get frontend URL - works for all environments
 const getFrontendUrl = (req) => {
-  // Production: sử dụng FRONTEND_URL_PROD hoặc detect từ referer
-  if (process.env.NODE_ENV === "production") {
-    // Ưu tiên env variable
-    if (process.env.FRONTEND_URL_PROD) {
-      return process.env.FRONTEND_URL_PROD;
-    }
-    
-    // Fallback: detect từ referer header
-    const referer = req.get("referer");
-    if (referer) {
-      try {
-        const url = new URL(referer);
-        return `${url.protocol}//${url.host}`;
-      } catch (e) {
-        console.error("Invalid referer URL:", referer);
-      }
-    }
-    
-    // Last fallback cho production
-    return "https://ezhome.website";
+  // 1. Ưu tiên: Environment variable (set trên hosting platform)
+  if (process.env.FRONTEND_URL) {
+    console.log("Using FRONTEND_URL from env:", process.env.FRONTEND_URL);
+    return process.env.FRONTEND_URL;
   }
   
-  // Development: sử dụng FRONTEND_URL hoặc localhost
-  return process.env.FRONTEND_URL || "http://localhost:3000";
+  // 2. Fallback: Detect từ referer header (Google redirect có referer)
+  const referer = req.get("referer");
+  if (referer) {
+    try {
+      const url = new URL(referer);
+      const detectedUrl = `${url.protocol}//${url.host}`;
+      console.log("Detected frontend URL from referer:", detectedUrl);
+      return detectedUrl;
+    } catch (e) {
+      console.error("Invalid referer URL:", referer);
+    }
+  }
+  
+  // 3. Fallback: Detect từ origin header
+  const origin = req.get("origin");
+  if (origin) {
+    console.log("Using origin header:", origin);
+    return origin;
+  }
+  
+  // 4. Last fallback dựa vào NODE_ENV
+  const fallbackUrl = process.env.NODE_ENV === "production" 
+    ? "https://ezhome.website"  // Production domain
+    : "http://localhost:3000";   // Local development
+  
+  console.log("Using fallback URL:", fallbackUrl);
+  return fallbackUrl;
 };
 
 const generateAccessToken = (user) => {
