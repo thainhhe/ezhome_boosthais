@@ -25,12 +25,14 @@ export default function Navbar({ authMode, setAuthMode, onShowDashboard }) {
       ></div>
 
       <div className="relative z-10 flex items-center gap-3">
-        {/* Logo - replace with an <img> if you add a logo file to public */}
+        {/* Logo */}
         <a href="/" className="flex items-center gap-3 text-white no-underline">
-          <div className="w-9 h-9 rounded-md bg-white/20 flex items-center justify-center text-xl font-bold text-white">
-            EZ
-          </div>
-          <span className="hidden sm:inline-block font-semibold">EZ Home</span>
+          <img 
+            src="/logo.png" 
+            alt="EZ Home Logo" 
+            className="w-12 h-12 object-contain"
+          />
+          <span className="hidden sm:inline-block font-semibold text-lg">EZ Home</span>
         </a>
       </div>
 

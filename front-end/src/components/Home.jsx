@@ -454,13 +454,12 @@ export default function Home() {
 
                     {/* Logo at bottom */}
                     <div className="flex justify-center mt-8">
-                      <div className="w-24 h-24 rounded-full bg-teal-600 flex items-center justify-center shadow-lg">
-                        <div className="text-center text-white">
-                          <div className="text-2xl font-bold italic">Lala</div>
-                          <div className="text-xs uppercase tracking-wider mt-1">
-                            HOUSE
-                          </div>
-                        </div>
+                      <div className="w-24 h-24 rounded-full bg-white flex items-center justify-center shadow-lg p-3">
+                        <img 
+                          src="/logo.png" 
+                          alt="EZ Home Logo" 
+                          className="w-full h-full object-contain"
+                        />
                       </div>
                     </div>
                   </div>
