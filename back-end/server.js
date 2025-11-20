@@ -85,6 +85,8 @@ const corsOptions = {
             process.env.FRONTEND_URL_DEV,
             "http://localhost:3000",
             "http://localhost:5000",
+            "https://ezhome.website",
+            "https://www.ezhome.website"
           ]
         : ["http://localhost:3000", "http://localhost:5173"];
 
