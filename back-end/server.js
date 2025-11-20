@@ -65,40 +65,30 @@ const corsOptions = {
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
   origin: (origin, callback) => {
-    if (process.env.NODE_ENV === "production") {
-      const allowedOrigins = process.env.FRONTEND_URL_PROD
-        ? process.env.FRONTEND_URL_PROD.split(",").map((url) => url.trim())
-        : ["https://ezhome.com", "https://www.ezhome.com"];
+    // Trong development, cho phép tất cả
+    if (process.env.NODE_ENV !== "production") {
+      console.log("CORS: Allowing origin (dev mode):", origin || "same-origin");
+      callback(null, true);
+      return;
+    }
+    
+    // Production: chỉ cho phép domains cụ thể
+    const allowedOrigins = process.env.FRONTEND_URL
+      ? process.env.FRONTEND_URl.split(",").map((url) => url.trim())
+      : [
+          "https://ezhome.website",
+          "https://www.ezhome.website",
+        ];
 
-      if (!origin) {
-        // Same-origin request (không có origin header)
-        callback(null, true);
-      } else if (allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error("Not allowed by CORS"));
-      }
+    if (!origin) {
+      // Same-origin request (không có origin header)
+      callback(null, true);
+    } else if (allowedOrigins.includes(origin)) {
+      console.log("CORS: Allowing origin (production):", origin);
+      callback(null, true);
     } else {
-      // Development: chấp nhận localhost hoặc tất cả
-      const devOrigins = process.env.FRONTEND_URL_DEV
-        ? [
-            process.env.FRONTEND_URL_DEV,
-            "http://localhost:3000",
-            "http://localhost:5000",
-            "https://ezhome.website",
-            "https://www.ezhome.website"
-          ]
-        : ["http://localhost:3000", "http://localhost:5173"];
-
-      if (
-        !origin ||
-        devOrigins.includes(origin) ||
-        origin.includes("localhost")
-      ) {
-        callback(null, true);
-      } else {
-        callback(null, true);
-      }
+      console.log("CORS: Blocking origin:", origin);
+      callback(new Error("Not allowed by CORS"));
     }
   },
 };

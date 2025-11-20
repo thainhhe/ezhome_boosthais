@@ -4,6 +4,34 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { validationResult } = require("express-validator");
 
+// Helper function to get frontend URL based on environment
+const getFrontendUrl = (req) => {
+  // Production: sử dụng FRONTEND_URL_PROD hoặc detect từ referer
+  if (process.env.NODE_ENV === "production") {
+    // Ưu tiên env variable
+    if (process.env.FRONTEND_URL_PROD) {
+      return process.env.FRONTEND_URL_PROD;
+    }
+    
+    // Fallback: detect từ referer header
+    const referer = req.get("referer");
+    if (referer) {
+      try {
+        const url = new URL(referer);
+        return `${url.protocol}//${url.host}`;
+      } catch (e) {
+        console.error("Invalid referer URL:", referer);
+      }
+    }
+    
+    // Last fallback cho production
+    return "https://ezhome.website";
+  }
+  
+  // Development: sử dụng FRONTEND_URL hoặc localhost
+  return process.env.FRONTEND_URL || "http://localhost:3000";
+};
+
 const generateAccessToken = (user) => {
   if (!process.env.JWT_ACCESS_SECRET) {
     throw new Error("JWT_ACCESS_SECRET is not configured");
@@ -203,21 +231,19 @@ const authController = {
       const user = req.user;
 
       if (!user) {
-        return res.redirect(
-          `${process.env.FRONTEND_URL || "http://localhost:3000"}/login?error=auth_failed`
-        );
+        const frontendUrl = getFrontendUrl(req);
+        return res.redirect(`${frontendUrl}?auth=login&error=auth_failed`);
       }
 
       const accessToken = generateAccessToken(user);
-
-      const frontendUrl = process.env.FRONTEND_URL || "http://localhost:3000";
+      const frontendUrl = getFrontendUrl(req);
       const redirectUrl = `${frontendUrl}/auth/callback?token=${accessToken}&userId=${user._id}`;
 
       res.redirect(redirectUrl);
     } catch (error) {
       console.error("Google auth callback error:", error);
-      const frontendUrl = process.env.FRONTEND_URL || "http://localhost:3000";
-      res.redirect(`${frontendUrl}/login?error=server_error`);
+      const frontendUrl = getFrontendUrl(req);
+      res.redirect(`${frontendUrl}?auth=login&error=server_error`);
     }
   },
 };
