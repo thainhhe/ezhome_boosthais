@@ -119,7 +119,15 @@ const authController = {
       });
     } catch (error) {
       console.error("Login error:", error);
-      res.status(500).json({ message: "Server error" });
+      console.error("Error details:", {
+        message: error.message,
+        stack: error.stack,
+        email: req.body?.email,
+      });
+      res.status(500).json({ 
+        message: "Server error",
+        error: process.env.NODE_ENV === "development" ? error.message : undefined 
+      });
     }
   },
 

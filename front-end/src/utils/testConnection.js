@@ -1,7 +1,10 @@
 // Utility để test kết nối với backend
 export const testBackendConnection = async () => {
   try {
-    const response = await fetch("http://localhost:5000/api-docs.json");
+    // Dùng biến môi trường để support cả localhost và production
+    const backendUrl = import.meta.env.VITE_API_URL || "http://localhost:5000";
+    const cleanUrl = backendUrl.replace(/\/api$/i, "").replace(/\/+$/, "");
+    const response = await fetch(`${cleanUrl}/health`);
     if (response.ok) {
       console.log("✅ Backend đang chạy!");
       return true;

@@ -112,6 +112,44 @@ swaggerSetup(app);
 
 connectDB();
 
+// Simple health check endpoint (không bị AdBlock chặn)
+app.get("/health", (req, res) => {
+  const mongoose = require("mongoose");
+  const dbStatus = mongoose.connection.readyState;
+  // 0 = disconnected, 1 = connected, 2 = connecting, 3 = disconnecting
+  const dbStatusText = {
+    0: "disconnected",
+    1: "connected", 
+    2: "connecting",
+    3: "disconnecting"
+  };
+  
+  res.json({ 
+    status: "ok", 
+    message: "Server is running",
+    database: dbStatusText[dbStatus] || "unknown",
+    timestamp: new Date().toISOString(),
+    env: process.env.NODE_ENV || "development"
+  });
+});
+
+// Debug endpoint to check environment setup (only in development)
+app.get("/api/debug/env", (req, res) => {
+  if (process.env.NODE_ENV === "production") {
+    return res.status(403).json({ message: "Not available in production" });
+  }
+  
+  res.json({
+    env: process.env.NODE_ENV || "development",
+    hasJwtAccessSecret: !!process.env.JWT_ACCESS_SECRET,
+    hasJwtRefreshSecret: !!process.env.JWT_REFRESH_SECRET,
+    hasMongoUri: !!process.env.MONGODB_URI,
+    mongoUri: process.env.MONGODB_URI ? process.env.MONGODB_URI.replace(/\/\/([^:]+):([^@]+)@/, '//$1:****@') : 'not set',
+    port: process.env.PORT || 5000,
+    frontendUrl: process.env.FRONTEND_URL || "not set",
+  });
+});
+
 app.use("/api", indexRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api", protectedRoutes);
@@ -123,5 +161,5 @@ app.use("/api/home", homeRoutes);
 app.use("/api/locations", locationRoutes);
 
 app.use(errorHandler);
-
+app.enable('trust proxy');
 app.listen(port, () => console.log(`Server running on port ${port}`));
