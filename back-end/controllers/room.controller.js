@@ -71,6 +71,7 @@ const roomController = {
         waterCost,
         wifiCost,
         parkingCost,
+        status,
       } = req.body;
 
       if (!title || !rentPrice || !area || !city || !district || !street) {
@@ -123,6 +124,7 @@ const roomController = {
           wifiCost: parseFloat(wifiCost) || 0,
           parkingCost: parseFloat(parkingCost) || 0,
         },
+        status: status || "inactive",
       });
 
       await room.save();
@@ -178,6 +180,7 @@ const roomController = {
         waterCost,
         wifiCost,
         parkingCost,
+        status,
       } = body;
 
       const updateData = {};
@@ -202,6 +205,8 @@ const roomController = {
         updateData["utilities.wifiCost"] = parseFloat(wifiCost);
       if (parkingCost !== undefined)
         updateData["utilities.parkingCost"] = parseFloat(parkingCost);
+      if (status !== undefined)
+        updateData.status = status;
 
       // If media files were uploaded, we need to append them to the room
       // because the PUT route accepts multipart/form-data and upload middleware

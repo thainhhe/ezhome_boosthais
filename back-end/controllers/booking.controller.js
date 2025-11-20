@@ -117,6 +117,11 @@ const bookingController = {
         return res.status(404).json({ message: "Booking not found" });
       }
 
+      // Tự động cập nhật room status khi booking completed
+      if (status === "completed" && booking.room) {
+        await Room.findByIdAndUpdate(booking.room._id, { status: "active" });
+      }
+
       res.json({
         message: "Booking status updated successfully",
         booking,

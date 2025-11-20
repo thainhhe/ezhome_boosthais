@@ -6,6 +6,7 @@ const getTopDistricts = async (req, res, next) => {
       {
         $match: {
           "address.city": "Thành phố Hà Nội",
+          "status": "inactive", // Chỉ hiển thị phòng còn trống
         },
       },
       {
@@ -35,7 +36,7 @@ const getTopDistricts = async (req, res, next) => {
           _id: 0,
           district: "$_id",
           roomCount: 1,
-          rooms: { $slice: ["$rooms", 5] },
+          rooms: "$rooms", // Hiển thị TẤT CẢ phòng (không giới hạn)
         },
       },
     ]);
@@ -73,7 +74,7 @@ Example response:
           "rentPrice": 5200000,
           "image": "https://cdn.ezhome.vn/rooms/xyz456.jpg"
         }
-        // ...up to 5 room samples per district
+        // ...tất cả phòng trong district (không giới hạn)
       ]
     }
     // ...top 3 districts

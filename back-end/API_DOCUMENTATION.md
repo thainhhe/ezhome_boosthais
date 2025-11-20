@@ -1512,7 +1512,13 @@ const response = await fetch('http://localhost:5000/api/rooms', {
 4. Admin kiểm tra tài khoản ngân hàng
 5. Admin cập nhật status:
    - Nếu đã thanh toán: `PUT /api/bookings/status/:id` với `{ "status": "completed" }`
+     - **Backend tự động cập nhật Room status từ "inactive" → "active"**
    - Nếu hủy: `PUT /api/bookings/status/:id` với `{ "status": "cancelled" }`
+
+**⚠️ Lưu ý về Room Status:**
+- Khi booking được chuyển sang `completed`, phòng tương ứng sẽ **tự động** chuyển status từ `inactive` → `active`
+- Các phòng có status `active` sẽ **không hiển thị** trên trang danh sách phòng cho user
+- Admin có thể thủ công thay đổi room status trong trang quản lý phòng
 
 ---
 
@@ -1579,6 +1585,7 @@ const response = await fetch('http://localhost:5000/api/rooms', {
     "wifiCost": 100000,
     "parkingCost": 0
   },
+  "status": "inactive",
   "createdAt": "2024-01-01T00:00:00.000Z",
   "updatedAt": "2024-01-01T00:00:00.000Z"
 }
@@ -1601,6 +1608,9 @@ const response = await fetch('http://localhost:5000/api/rooms', {
 - **`utilities.waterCost`** (number, default: 0): Giá nước (VND/tháng)
 - **`utilities.wifiCost`** (number, default: 0): Giá wifi (VND/tháng)
 - **`utilities.parkingCost`** (number, default: 0): Giá gửi xe (VND/tháng)
+- **`status`** (string, enum: ["inactive", "active"], default: "inactive"): Trạng thái phòng
+  - `inactive`: Phòng còn trống (hiển thị cho user)
+  - `active`: Phòng đã được thuê (tự động chuyển khi booking completed)
 
 ---
 

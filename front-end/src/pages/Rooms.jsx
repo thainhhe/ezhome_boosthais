@@ -46,7 +46,9 @@ export default function Rooms() {
         const list = Array.isArray(data)
           ? data
           : data?.rooms || data?.data || [];
-        if (mounted) setRooms(list);
+        // Chỉ hiển thị phòng inactive (còn trống)
+        const inactiveRooms = list.filter(room => room.status === "inactive");
+        if (mounted) setRooms(inactiveRooms);
       } catch (err) {
         console.error(err);
         if (mounted) setError(err);

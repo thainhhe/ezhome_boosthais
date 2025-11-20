@@ -22,6 +22,7 @@ export default function RoomForm({ initial = {}, onSaved, onCancel }) {
   const [waterCost, setWaterCost] = useState(initial.waterCost || 0);
   const [wifiCost, setWifiCost] = useState(initial.wifiCost || 0);
   const [parkingCost, setParkingCost] = useState(initial.parkingCost || 0);
+  const [status, setStatus] = useState(initial.status || "inactive");
   const [submitting, setSubmitting] = useState(false);
 
   // location states
@@ -49,6 +50,7 @@ export default function RoomForm({ initial = {}, onSaved, onCancel }) {
     setWaterCost(initial.utilities?.waterCost || 0);
     setWifiCost(initial.utilities?.wifiCost || 0);
     setParkingCost(initial.utilities?.parkingCost || 0);
+    setStatus(initial.status || "inactive");
   }, [initial]);
 
   // load provinces on mount
@@ -162,6 +164,7 @@ export default function RoomForm({ initial = {}, onSaved, onCancel }) {
       fd.append("waterCost", String(waterCost || 0));
       fd.append("wifiCost", String(wifiCost || 0));
       fd.append("parkingCost", String(parkingCost || 0));
+      fd.append("status", status);
       fd.append("description", description);
       for (const f of images) fd.append("images", f);
       for (const v of videos) fd.append("videos", v);
@@ -292,6 +295,18 @@ export default function RoomForm({ initial = {}, onSaved, onCancel }) {
             className="mt-1 block w-full p-2 border rounded"
             placeholder="e.g. Full furnished with bed, table..."
           />
+        </div>
+
+        <div>
+          <label className="block text-sm">Trạng thái phòng</label>
+          <select
+            value={status}
+            onChange={(e) => setStatus(e.target.value)}
+            className="mt-1 block w-full p-2 border rounded"
+          >
+            <option value="inactive">Inactive (Còn trống)</option>
+            <option value="active">Active (Đã cho thuê)</option>
+          </select>
         </div>
 
         <div className="grid grid-cols-4 gap-2">

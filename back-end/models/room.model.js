@@ -94,6 +94,11 @@ const roomSchema = new mongoose.Schema(
         min: 0,
       },
     },
+    status: {
+      type: String,
+      enum: ["active", "inactive"],
+      default: "inactive",
+    },
   },
   {
     timestamps: true,
