@@ -6,12 +6,23 @@ import { useNavigate, Link } from "react-router-dom";
 export default function BookingsAdmin() {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [statusFilter, setStatusFilter] = useState("all");
+  const limit = 10; // 10 records per page
 
-  const fetch = async () => {
+  const fetch = async (p = page, status = statusFilter) => {
     setLoading(true);
     try {
-      const data = await adminService.getAllBookings();
-      setBookings(data);
+      const params = { page: p, limit };
+      if (status && status !== "all") params.status = status;
+      // default sort newest first
+      params.sort = "-createdAt";
+      const data = await adminService.getAllBookings(params);
+      // backend returns { bookings, page, totalPages, totalCount }
+      setBookings(data.bookings || []);
+      setPage(data.page || p);
+      setTotalPages(data.totalPages || 1);
     } catch (err) {
       console.error(err);
       toast.error("Không thể tải danh sách booking");
@@ -21,8 +32,9 @@ export default function BookingsAdmin() {
   };
 
   useEffect(() => {
-    fetch();
-  }, []);
+    fetch(1, statusFilter);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [statusFilter]);
 
   const updateStatus = async (id, status) => {
     try {
@@ -53,6 +65,26 @@ export default function BookingsAdmin() {
             >
               Rooms
             </Link>
+          </div>
+        </div>
+        {/* Top filter (moved here as requested) */}
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-3">
+            <label className="text-sm">Filter:</label>
+            <select
+              value={statusFilter}
+              onChange={(e) => {
+                setStatusFilter(e.target.value);
+                setPage(1);
+              }}
+              className="px-2 py-1 border rounded"
+            >
+              <option value="all">All</option>
+              <option value="pending">Pending</option>
+              <option value="completed">Completed</option>
+              <option value="cancelled">Cancelled</option>
+            </select>
+            <div className="text-sm text-gray-600">Showing newest first</div>
           </div>
         </div>
         <div className="bg-white rounded shadow overflow-x-auto">
@@ -111,6 +143,40 @@ export default function BookingsAdmin() {
               )}
             </tbody>
           </table>
+        </div>
+        {/* Pagination controls (bottom) */}
+        <div className="flex items-center justify-end mt-4 gap-2">
+          <button
+            onClick={() => {
+              if (page > 1) {
+                const np = page - 1;
+                setPage(np);
+                fetch(np, statusFilter);
+              }
+            }}
+            disabled={page <= 1}
+            className="px-3 py-1 bg-gray-200 rounded disabled:opacity-60"
+          >
+            Prev
+          </button>
+
+          <div className="px-3 py-1">
+            Page {page} / {totalPages}
+          </div>
+
+          <button
+            onClick={() => {
+              if (page < totalPages) {
+                const np = page + 1;
+                setPage(np);
+                fetch(np, statusFilter);
+              }
+            }}
+            disabled={page >= totalPages}
+            className="px-3 py-1 bg-gray-200 rounded disabled:opacity-60"
+          >
+            Next
+          </button>
         </div>
       </div>
     </div>

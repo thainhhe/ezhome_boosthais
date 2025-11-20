@@ -9,12 +9,267 @@ import useDragScroll from "../hooks/useDragScroll";
 
 const HorizontalScroll = ({ children, className = "" }) => {
   const containerRef = useDragScroll();
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
+  const indicatorRef = React.useRef(null);
+  const [thumbWidth, setThumbWidth] = useState(25); // percent
+  const [thumbLeft, setThumbLeft] = useState(0); // percent
+  const draggingRef = React.useRef({
+    dragging: false,
+    startX: 0,
+    startLeft: 0,
+  });
+
+  const updateArrows = () => {
+    const el = containerRef.current;
+    if (!el) return;
+    setCanScrollLeft(el.scrollLeft > 0);
+    // add a small epsilon to avoid off-by-one issues
+    setCanScrollRight(el.scrollWidth > el.clientWidth + el.scrollLeft + 1);
+
+    // update thumb size & position
+    const wrapper = indicatorRef.current;
+    if (!wrapper) return;
+    const visibleRatio = el.clientWidth / Math.max(el.scrollWidth, 1);
+    const minPercent = 6;
+    const widthPercent = Math.max(visibleRatio * 100, minPercent);
+    setThumbWidth(widthPercent);
+
+    const maxScroll = Math.max(el.scrollWidth - el.clientWidth, 1);
+    const leftPercent = (el.scrollLeft / maxScroll) * (100 - widthPercent);
+    setThumbLeft(Number.isFinite(leftPercent) ? leftPercent : 0);
+  };
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    // initialize
+    updateArrows();
+    el.addEventListener("scroll", updateArrows, { passive: true });
+    window.addEventListener("resize", updateArrows);
+    return () => {
+      el.removeEventListener("scroll", updateArrows);
+      window.removeEventListener("resize", updateArrows);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [containerRef]);
+
+  // pointer handlers for dragging the thumb
+  useEffect(() => {
+    const onPointerMove = (e) => {
+      const info = draggingRef.current;
+      if (!info.dragging) return;
+      const wrapper = indicatorRef.current;
+      const el = containerRef.current;
+      if (!wrapper || !el) return;
+      const rect = wrapper.getBoundingClientRect();
+      const px = e.clientX - rect.left;
+      const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+      const localX = clamp(px, 0, rect.width);
+      const pct = (localX / rect.width) * 100; // pct where pointer is
+      const newLeft = clamp(pct - info.startOffsetPercent, 0, 100 - thumbWidth);
+      setThumbLeft(newLeft);
+
+      // set scrollLeft accordingly
+      const scrollable = Math.max(el.scrollWidth - el.clientWidth, 1);
+      const scrollLeft = (newLeft / (100 - thumbWidth)) * scrollable;
+      el.scrollTo({ left: scrollLeft, behavior: "auto" });
+    };
+
+    const onPointerUp = () => {
+      draggingRef.current.dragging = false;
+      window.removeEventListener("pointermove", onPointerMove);
+      window.removeEventListener("pointerup", onPointerUp);
+    };
+
+    return () => {
+      window.removeEventListener("pointermove", onPointerMove);
+      window.removeEventListener("pointerup", onPointerUp);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [thumbWidth]);
+
+  const onThumbPointerDown = (e) => {
+    const wrapper = indicatorRef.current;
+    const el = containerRef.current;
+    if (!wrapper || !el) return;
+    const rect = wrapper.getBoundingClientRect();
+    const px = e.clientX - rect.left;
+    const offsetPercent = (px / rect.width) * 100 - thumbLeft;
+    draggingRef.current = {
+      dragging: true,
+      startX: e.clientX,
+      startOffsetPercent: offsetPercent,
+    };
+
+    const onPointerMove = (ev) => {
+      const info = draggingRef.current;
+      if (!info.dragging) return;
+      const rect2 = wrapper.getBoundingClientRect();
+      const localX = Math.max(
+        0,
+        Math.min(rect2.width, ev.clientX - rect2.left)
+      );
+      const pct = (localX / rect2.width) * 100;
+      const newLeft = Math.max(
+        0,
+        Math.min(100 - thumbWidth, pct - info.startOffsetPercent)
+      );
+      setThumbLeft(newLeft);
+      const scrollable = Math.max(el.scrollWidth - el.clientWidth, 1);
+      const scrollLeft = (newLeft / (100 - thumbWidth)) * scrollable;
+      el.scrollTo({ left: scrollLeft, behavior: "auto" });
+    };
+
+    const onPointerUp = () => {
+      draggingRef.current.dragging = false;
+      window.removeEventListener("pointermove", onPointerMove);
+      window.removeEventListener("pointerup", onPointerUp);
+    };
+
+    window.addEventListener("pointermove", onPointerMove);
+    window.addEventListener("pointerup", onPointerUp);
+    // prevent default to avoid text selection
+    e.preventDefault();
+  };
+
+  const scrollAmount = () => {
+    const el = containerRef.current;
+    return Math.floor((el?.clientWidth || 300) * 0.7);
+  };
+
+  const scrollLeft = () => {
+    const el = containerRef.current;
+    if (!el) return;
+    el.scrollBy({ left: -scrollAmount(), behavior: "smooth" });
+  };
+
+  const scrollRight = () => {
+    const el = containerRef.current;
+    if (!el) return;
+    el.scrollBy({ left: scrollAmount(), behavior: "smooth" });
+  };
+
   return (
-    <div
-      ref={containerRef}
-      className={`flex gap-6 overflow-x-auto pb-4 scrollbar-hide cursor-grab active:cursor-grabbing ${className}`}
-    >
-      {children}
+    <div className={`relative ${className}`}>
+      {/* left arrow */}
+      <button
+        type="button"
+        aria-label="Scroll left"
+        onClick={scrollLeft}
+        className={`hidden md:flex absolute left-0 top-1/2 -translate-y-1/2 z-20 items-center justify-center h-10 w-10 rounded-full bg-white/90 shadow-md hover:bg-white transition-colors ${
+          canScrollLeft ? "opacity-100" : "opacity-40 pointer-events-none"
+        }`}
+      >
+        <svg
+          className="w-5 h-5 text-gray-800"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+        >
+          <path
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M15 18l-6-6 6-6"
+          />
+        </svg>
+      </button>
+
+      {/* container */}
+      <div
+        ref={containerRef}
+        className={`flex flex-nowrap gap-6 overflow-x-auto pb-4 scrollbar-hide cursor-grab active:cursor-grabbing`}
+      >
+        {children}
+      </div>
+
+      {/* scrollbar indicator */}
+      <div
+        ref={indicatorRef}
+        className="mt-4 h-3 bg-white/20 rounded-full w-full relative"
+      >
+        <div
+          role="slider"
+          aria-label="carousel position"
+          onPointerDown={onThumbPointerDown}
+          style={{ left: `${thumbLeft}%`, width: `${thumbWidth}%` }}
+          className="absolute top-0 h-3 bg-white rounded-full shadow-sm touch-none"
+        />
+      </div>
+
+      {/* right arrow */}
+      <button
+        type="button"
+        aria-label="Scroll right"
+        onClick={scrollRight}
+        className={`hidden md:flex absolute right-0 top-1/2 -translate-y-1/2 z-20 items-center justify-center h-10 w-10 rounded-full bg-white/90 shadow-md hover:bg-white transition-colors ${
+          canScrollRight ? "opacity-100" : "opacity-40 pointer-events-none"
+        }`}
+      >
+        <svg
+          className="w-5 h-5 text-gray-800"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+        >
+          <path
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M9 6l6 6-6 6"
+          />
+        </svg>
+      </button>
+
+      {/* mobile floating arrows (small, visible on small screens) */}
+      <div className="md:hidden absolute left-2 bottom-2 z-20 flex gap-2">
+        <button
+          type="button"
+          aria-label="Scroll left"
+          onClick={scrollLeft}
+          className={`flex items-center justify-center h-8 w-8 rounded-full bg-white/90 shadow-md hover:bg-white transition-colors ${
+            canScrollLeft ? "opacity-100" : "opacity-40 pointer-events-none"
+          }`}
+        >
+          <svg
+            className="w-4 h-4 text-gray-800"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+          >
+            <path
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M15 18l-6-6 6-6"
+            />
+          </svg>
+        </button>
+
+        <button
+          type="button"
+          aria-label="Scroll right"
+          onClick={scrollRight}
+          className={`flex items-center justify-center h-8 w-8 rounded-full bg-white/90 shadow-md hover:bg-white transition-colors ${
+            canScrollRight ? "opacity-100" : "opacity-40 pointer-events-none"
+          }`}
+        >
+          <svg
+            className="w-4 h-4 text-gray-800"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+          >
+            <path
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M9 6l6 6-6 6"
+            />
+          </svg>
+        </button>
+      </div>
     </div>
   );
 };
@@ -218,11 +473,30 @@ export default function Home() {
               <div className="text-right text-xs uppercase tracking-wider">
                 Hệ thống cơ sở
               </div>
-              <ul className="mt-4 text-lg">
-                <li>Khu vực: Cầu Giấy</li>
-                <li>Khu vực: Ba Đình</li>
-                <li>Khu vực: Tây Hồ</li>
-              </ul>
+              {/* dynamic top-3 districts by roomCount from API */}
+              <div className="mt-4 text-lg text-white">
+                {topDistrictsLoading ? (
+                  <div>Đang tải khu vực...</div>
+                ) : topDistrictsError ? (
+                  <div className="text-amber-200">Không thể tải khu vực</div>
+                ) : Array.isArray(topDistricts) && topDistricts.length ? (
+                  <ul className="space-y-2">
+                    {[...topDistricts]
+                      .sort((a, b) => (b.roomCount || 0) - (a.roomCount || 0))
+                      .slice(0, 3)
+                      .map((d) => (
+                        <li key={d.district}>
+                          Khu vực: {d.district}{" "}
+                          <span className="text-sm text-white/80">
+                            • {d.roomCount || 0} phòng
+                          </span>
+                        </li>
+                      ))}
+                  </ul>
+                ) : (
+                  <div>Chưa có dữ liệu khu vực</div>
+                )}
+              </div>
               <div className="mt-4">
                 <Link
                   to="/rooms"
@@ -245,13 +519,19 @@ export default function Home() {
             ) : topDistricts.length ? (
               topDistricts.map((district) => {
                 const roomsInDistrict = Array.isArray(district.rooms)
-                  ? district.rooms.map((room) => {
-                      // Debug: log room IDs
+                  ? district.rooms.map((room, __idx) => {
+                      // Debug: log room IDs and index if invalid or duplicate-like ids
                       if (!room._id || room._id === "1") {
-                        console.warn("Invalid room ID in district:", district.district, room);
+                        console.warn(
+                          "Invalid or suspicious room ID in district (index):",
+                          district.district,
+                          __idx,
+                          room
+                        );
                       }
                       return {
                         ...room,
+                        __idx,
                         address: {
                           city: "Thành phố Hà Nội",
                           district: district.district,
@@ -278,7 +558,9 @@ export default function Home() {
                         <HorizontalScroll>
                           {roomsInDistrict.map((room) => (
                             <RoomCard
-                              key={room._id || room.id}
+                              key={`${room._id || room.id || room.__idx}-${
+                                district.district
+                              }`}
                               room={room}
                               className="shrink-0"
                             />
@@ -290,10 +572,7 @@ export default function Home() {
                         </div>
                       )}
 
-                      {/* custom scrollbar indicator */}
-                      <div className="mt-4 h-3 bg-white/20 rounded-full w-full relative">
-                        <div className="absolute left-0 top-0 h-3 w-1/4 bg-white rounded-full"></div>
-                      </div>
+                      {/* indicator is rendered inside HorizontalScroll */}
                     </div>
                   </div>
                 );

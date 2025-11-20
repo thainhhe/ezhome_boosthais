@@ -132,8 +132,29 @@ const roomController = {
         room,
       });
     } catch (error) {
-      console.error("Create room error:", error);
-      res.status(500).json({ message: "Server error" });
+      console.error(
+        `Error in ${req.method === "POST" ? "createRoom" : "updateRoom"}:`,
+        error
+      );
+
+      // Xử lý lỗi validation của Mongoose (nếu một trường required bị thiếu)
+      if (error.name === "ValidationError") {
+        const messages = Object.values(error.errors).map((val) => val.message);
+        return res.status(400).json({
+          message: "Lỗi Validation Mongoose: " + messages.join(", "),
+          errors: error.errors,
+        });
+      }
+
+      // Xử lý lỗi Cloudinary (nếu file upload thất bại)
+      if (error.message && error.message.includes("Upload failed")) {
+        return res
+          .status(500)
+          .json({ message: "Lỗi Upload Cloudinary: " + error.message });
+      }
+
+      // Lỗi chung
+      res.status(500).json({ message: "Lỗi Server không xác định" });
     }
   },
 

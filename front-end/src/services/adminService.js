@@ -30,8 +30,8 @@ export const adminService = {
   },
 
   // Bookings (admin)
-  getAllBookings: async () => {
-    const res = await api.get(`/api/bookings/all`);
+  getAllBookings: async (params) => {
+    const res = await api.get(`/api/bookings/all`, { params });
     return res.data;
   },
 
