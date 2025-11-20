@@ -6,7 +6,6 @@ import { createPortal } from "react-dom";
 import useAuthStore from "../../stores/authStore";
 import bookingService from "../../services/bookingService";
 import { toast } from "react-hot-toast";
-import CheckPayment from "./CheckPayment"; // updated CheckPayment
 import { getRoomById } from "../../services/adminService";
 
 // Modal shell using createPortal
@@ -36,10 +35,9 @@ function ModalShell({ children, isOpen, onClose }) {
 }
 
 function generateQRCodeUrl(amount, message) {
-  const bankId = "MB";
-  const accountNo = "0974753813";
-  const template = "compact2";
-  return `https://img.vietqr.io/image/${bankId}-${accountNo}-${template}.png?amount=${amount}&addInfo=${message}`;
+  // Return a local QR image from public/qr/ folder.
+  const filename = "qr.jpg";
+  return `/${filename}`;
 }
 
 export default function CheckoutPage() {
@@ -68,9 +66,13 @@ export default function CheckoutPage() {
 
   const [showQRCode, setShowQRCode] = useState(false);
   const [qrCodeValue, setQrCodeValue] = useState("");
+  const [qrMissing, setQrMissing] = useState(false);
+  const [qrCandidates, setQrCandidates] = useState([]);
+  const [qrCandidateIndex, setQrCandidateIndex] = useState(0);
   const [paymentCheckText, setPaymentCheckText] = useState("");
   const [totalAmount, setTotalAmount] = useState(localRoomPrice || 0);
   const [bookingId, setBookingId] = useState(null);
+  const [confirming, setConfirming] = useState(false);
 
   useEffect(() => {
     if (initialized) {
@@ -148,26 +150,40 @@ export default function CheckoutPage() {
     setOrderError(null);
 
     try {
-      const res = await bookingService.createBooking({
-        roomId: localRoomId,
-        name: formData.name,
-        phone: formData.phone,
-        paymentMethod: formData.paymentMethod,
-        notes: formData.notes,
-      });
-      const booking = res.booking;
-      if (!booking || !booking._id)
-        throw new Error("Không thể tạo đơn đặt phòng.");
-
-      setBookingId(booking._id);
-      setTotalAmount(booking.totalAmount || localRoomPrice || totalAmount);
-
+      // For bank transfer flow, postpone creating booking until user confirms they transferred
       if (formData.paymentMethod === "bank_transfer") {
-        const paymentCode = `EZH${booking._id.slice(-6).toUpperCase()}`;
-        setPaymentCheckText(paymentCode);
-        setQrCodeValue(generateQRCodeUrl(booking.totalAmount, paymentCode));
+        // prepare candidate paths for the QR image (tries several common locations)
+        const candidates = [
+          `/qr.jpg`,
+          `/qr/qr.jpg`,
+          `/public/qr.jpg`,
+          `/qr.png`,
+          `/qr/techcombank.png`,
+          `qr.jpg`,
+        ];
+        setQrCandidates(candidates);
+        setQrCandidateIndex(0);
+        const url = candidates[0];
+        console.log("Checkout: QR URL candidates ->", candidates);
+        setQrMissing(false);
+        setQrCodeValue(url);
+        // store pending booking payload locally until user confirms
+        setBookingId(null);
         setShowQRCode(true);
       } else {
+        // immediate booking create for non-bank methods
+        const res = await bookingService.createBooking({
+          roomId: localRoomId,
+          name: formData.name,
+          phone: formData.phone,
+          paymentMethod: formData.paymentMethod,
+          notes: formData.notes,
+        });
+        const booking = res.booking;
+        if (!booking || !booking._id)
+          throw new Error("Không thể tạo đơn đặt phòng.");
+        setBookingId(booking._id);
+        setTotalAmount(booking.totalAmount || localRoomPrice || totalAmount);
         toast.success("Đặt phòng thành công! Vui lòng chờ xác nhận.");
         navigate("/bookings");
       }
@@ -183,9 +199,10 @@ export default function CheckoutPage() {
   };
 
   if (!initialized || !localRoomId) {
+    // show a simple inline spinner instead of a missing component
     return (
       <div className="min-h-screen pt-24 px-4 bg-gray-50 flex items-center justify-center">
-        <LoadingSpinner />
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-teal-600" />
       </div>
     );
   }
@@ -364,40 +381,104 @@ export default function CheckoutPage() {
             Quét mã để thanh toán
           </h3>
           <p className="text-sm text-gray-600 text-center">
-            Ngân hàng: <strong>Techcombank (TCB)</strong>
-            <br />
-            Chủ TK: <strong>[TÊN CHỦ TÀI KHOẢN]</strong>
-            <br />
-            Số tiền:{" "}
+            Vui lòng chuyển khoản ngân hàng với số tiền sau: Số tiền:{" "}
             <strong className="text-red-600">
               {totalAmount.toLocaleString()} vnđ
             </strong>
           </p>
-          <img
-            src={qrCodeValue}
-            alt="QR Code Thanh toán"
-            className="w-64 h-64 mx-auto my-4"
-          />
+          {qrMissing ? (
+            <div className="w-64 h-64 mx-auto my-4 flex items-center justify-center bg-white/10 rounded">
+              <div className="text-sm text-red-600">Không tìm thấy ảnh QR.</div>
+            </div>
+          ) : (
+            <>
+              <img
+                src={qrCodeValue}
+                alt="QR Code Thanh toán"
+                onError={() => {
+                  // try next candidate if available
+                  console.warn("Checkout: QR load failed for ->", qrCodeValue);
+                  const nextIndex = qrCandidateIndex + 1;
+                  if (qrCandidates && nextIndex < qrCandidates.length) {
+                    console.log(
+                      "Checkout: trying next QR candidate ->",
+                      qrCandidates[nextIndex]
+                    );
+                    setQrCandidateIndex(nextIndex);
+                    setQrCodeValue(qrCandidates[nextIndex]);
+                  } else {
+                    console.error(
+                      "Checkout: all QR candidates failed ->",
+                      qrCandidates
+                    );
+                    setQrMissing(true);
+                  }
+                }}
+                className="w-64 h-64 mx-auto my-4"
+              />
+            </>
+          )}
           <p className="text-center font-medium text-teal-700">
-            Nội dung chuyển khoản:
-            <br />
-            <strong className="text-lg text-red-600 tracking-wider">
-              {paymentCheckText}
-            </strong>
-          </p>
-          <p className="text-xs text-gray-500 text-center mt-2">
-            (Vui lòng giữ nguyên nội dung chuyển khoản để được xác nhận tự động)
+            Quét mã QR và chuyển khoản theo số tiền hiển thị. Admin sẽ kiểm tra
+            và xác nhận sau khi nhận được tiền.
           </p>
 
-          <CheckPayment
-            totalMoney={totalAmount}
-            txt={paymentCheckText}
-            onPaymentSuccess={() => {
-              setShowQRCode(false);
-              toast.success("Đã ghi nhận thanh toán! Đang chờ Admin xác nhận.");
-              navigate("/bookings");
-            }}
-          />
+          <div className="text-center mt-4">
+            <p className="text-sm text-gray-600 mb-3">
+              Sau khi chuyển khoản, vui lòng nhấn nút bên dưới để hoàn tất.
+              Admin sẽ kiểm tra tài khoản và xác nhận trạng thái thanh toán.
+            </p>
+            <div className="flex items-center justify-center gap-3">
+              <button
+                onClick={async () => {
+                  if (confirming) return;
+                  setConfirming(true);
+                  try {
+                    // create booking now with pending status (backend defaults to pending)
+                    const res = await bookingService.createBooking({
+                      roomId: localRoomId,
+                      name: formData.name,
+                      phone: formData.phone,
+                      paymentMethod: formData.paymentMethod,
+                      notes: formData.notes,
+                    });
+                    const booking = res.booking;
+                    if (!booking || !booking._id)
+                      throw new Error("Không thể tạo đơn đặt phòng.");
+                    setBookingId(booking._id);
+                    setTotalAmount(booking.totalAmount || totalAmount);
+                    toast.success(
+                      "Yêu cầu đặt phòng đã ghi nhận. Chờ Admin xác nhận."
+                    );
+                    setShowQRCode(false);
+                    navigate("/bookings");
+                  } catch (err) {
+                    console.error("Confirm booking error:", err);
+                    const msg =
+                      err?.response?.data?.message ||
+                      err?.message ||
+                      "Tạo đặt phòng thất bại";
+                    toast.error(msg);
+                  } finally {
+                    setConfirming(false);
+                  }
+                }}
+                disabled={confirming}
+                className="px-4 py-2 bg-teal-600 text-white rounded-md hover:bg-teal-700 disabled:opacity-70"
+              >
+                {confirming
+                  ? "Đang ghi nhận..."
+                  : "Tôi đã chuyển khoản / Hoàn tất"}
+              </button>
+
+              <button
+                onClick={() => setShowQRCode(false)}
+                className="px-4 py-2 bg-gray-200 rounded-md hover:bg-gray-300"
+              >
+                Đóng
+              </button>
+            </div>
+          </div>
         </ModalShell>
       </div>
     </div>

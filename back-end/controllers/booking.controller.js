@@ -50,11 +50,40 @@ const bookingController = {
 
   getAllBookings: async (req, res) => {
     try {
-      const bookings = await Booking.find()
-        .populate("user", "-password")
-        .populate("room");
+      // Support pagination, filtering by status, and sorting (newest first by default)
+      const page = Math.max(1, parseInt(req.query.page)) || 1;
+      const limit = Math.max(1, parseInt(req.query.limit)) || 10;
+      const status = req.query.status; // optional: pending, completed, cancelled
+      // sort param: e.g. createdAt:desc or createdAt:asc or simply -createdAt
+      let sort = { createdAt: -1 };
+      if (req.query.sort) {
+        const s = req.query.sort;
+        // allow formats: -createdAt or createdAt:asc / createdAt:desc
+        if (s.startsWith("-")) {
+          sort = { [s.slice(1)]: -1 };
+        } else if (s.includes(":")) {
+          const [field, dir] = s.split(":");
+          sort = { [field]: dir === "asc" ? 1 : -1 };
+        } else {
+          sort = { [s]: -1 };
+        }
+      }
 
-      res.json(bookings);
+      const filter = {};
+      if (status) filter.status = status;
+
+      const totalCount = await Booking.countDocuments(filter);
+      const totalPages = Math.ceil(totalCount / limit) || 1;
+      const skip = (page - 1) * limit;
+
+      const bookings = await Booking.find(filter)
+        .populate("user", "-password")
+        .populate("room")
+        .sort(sort)
+        .skip(skip)
+        .limit(limit);
+
+      res.json({ bookings, page, totalPages, totalCount });
     } catch (error) {
       console.error("Get all bookings error:", error);
       res.status(500).json({ message: "Server error" });
@@ -100,4 +129,3 @@ const bookingController = {
 };
 
 module.exports = bookingController;
-

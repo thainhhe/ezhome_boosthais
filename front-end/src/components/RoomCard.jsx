@@ -46,9 +46,12 @@ export default function RoomCard({ room, title, numbers, className }) {
   );
 
   // If we have a room object, make the whole card clickable to the detail page
-  if (room && (room._id || room.id)) {
+  // Only link to detail page when we have a valid Mongo ObjectId (_id)
+  const isObjectId = (id) =>
+    typeof id === "string" && /^[0-9a-fA-F]{24}$/.test(id);
+  if (room && isObjectId(room._id)) {
     return (
-      <Link to={`/rooms/${room._id || room.id}`} className="inline-block">
+      <Link to={`/rooms/${room._id}`} className="inline-block">
         {container}
       </Link>
     );

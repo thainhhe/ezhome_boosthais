@@ -12,6 +12,7 @@ const testRoutes = require("./routes/test.routes");
 const roomRoutes = require("./routes/room.routes");
 const bookingRoutes = require("./routes/booking.routes");
 const homeRoutes = require("./routes/home.routes");
+const locationRoutes = require("./routes/location.routes");
 const errorHandler = require("./utils/errorHandler");
 
 dotenv.config();
@@ -32,7 +33,9 @@ const optionalEnvVars = [
   "FRONTEND_URL_DEV",
 ];
 
-const missingEnvVars = requiredEnvVars.filter((varName) => !process.env[varName]);
+const missingEnvVars = requiredEnvVars.filter(
+  (varName) => !process.env[varName]
+);
 
 if (missingEnvVars.length > 0) {
   console.error(
@@ -47,7 +50,9 @@ const missingOptionalEnvVars = optionalEnvVars.filter(
 );
 if (missingOptionalEnvVars.length > 0) {
   console.warn(
-    `⚠️  Missing optional environment variables (Google OAuth may not work): ${missingOptionalEnvVars.join(", ")}`
+    `⚠️  Missing optional environment variables (Google OAuth may not work): ${missingOptionalEnvVars.join(
+      ", "
+    )}`
   );
 }
 
@@ -76,10 +81,18 @@ const corsOptions = {
     } else {
       // Development: chấp nhận localhost hoặc tất cả
       const devOrigins = process.env.FRONTEND_URL_DEV
-        ? [process.env.FRONTEND_URL_DEV, "http://localhost:3000", "http://localhost:5000"]
+        ? [
+            process.env.FRONTEND_URL_DEV,
+            "http://localhost:3000",
+            "http://localhost:5000",
+          ]
         : ["http://localhost:3000", "http://localhost:5173"];
 
-      if (!origin || devOrigins.includes(origin) || origin.includes("localhost")) {
+      if (
+        !origin ||
+        devOrigins.includes(origin) ||
+        origin.includes("localhost")
+      ) {
         callback(null, true);
       } else {
         callback(null, true);
@@ -104,6 +117,8 @@ app.use("/api/test", testRoutes);
 app.use("/api/rooms", roomRoutes);
 app.use("/api/bookings", bookingRoutes);
 app.use("/api/home", homeRoutes);
+// server-side proxy for provinces/districts to avoid CORS issues from browser
+app.use("/api/locations", locationRoutes);
 
 app.use(errorHandler);
 

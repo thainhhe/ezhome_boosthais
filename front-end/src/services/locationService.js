@@ -1,7 +1,12 @@
-// Simple location service that tries open.oapi.vn first and falls back to a known public API
-// Exports: getProvinces(), getDistricts(provinceCode)
 const BASE = "https://open.oapi.vn";
-const LOCAL_PROXY = "/api/locations"; // server-side proxy to avoid CORS
+const VITE_API_URL =
+  typeof import.meta !== "undefined" ? import.meta.env.VITE_API_URL : undefined;
+const backendHost = VITE_API_URL
+  ? String(VITE_API_URL).replace(/\/+$|\/api$/g, "")
+  : "";
+const LOCAL_PROXY = backendHost
+  ? `${backendHost}/api/locations`
+  : "/api/locations"; // server-side proxy to avoid CORS
 const FALLBACK = "https://provinces.open-api.vn/api";
 
 let provincesCache = null; // array of { code, name, districts?: [{code,name}] }
